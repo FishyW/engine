@@ -12,7 +12,19 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "all": false,
+      "dialog": {
+         "open": true
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["/home/winsst/Downloads/**"],
+        "all": true
+      },
+      "http": {
+        "all": true, 
+        "request": true
+      }
     },
     "bundle": {
       "active": true,
