@@ -3,7 +3,7 @@ import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 const PROTOCOL = "fetch";
 
-import { type Wasm, WASM_PATH } from "./path";
+import { type Wasm, WASM_PATH } from "$lib/path";
 import { modifyGlobalFetch } from "$lib/utils";
 
 
