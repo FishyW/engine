@@ -4,7 +4,7 @@ import { convertFileSrc } from "@tauri-apps/api/tauri";
 const PROTOCOL = "fetch";
 
 import { type Wasm, WASM_PATH } from "./path";
-import { modifyGlobalFetch } from "./utils_nocheck";
+import { modifyGlobalFetch } from "$lib/utils";
 
 
 export async function load() {

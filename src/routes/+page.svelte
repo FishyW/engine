@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { exportWasm } from './utils_nocheck.js';
+	import { exportWasm } from "$lib/utils";
 	
 
 	export let data;
