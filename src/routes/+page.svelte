@@ -18,17 +18,14 @@
 		exportWasm({addWorld}, "hello");
 
 		display = wasm.init_script();
-		document.body.style.display = "revert"
+		document.body.style.display = "revert";
 	})
 
 </script>
 
 
 <h1>Welcome to SvelteKt!</h1>
-
-{#if display}
-	<p>{display}</p>
-{/if}
+<p>{display}</p>
 
 
 <svelte:window on:keypress={e => {
