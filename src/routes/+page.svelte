@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { exportWasm } from './utils_nocheck.js';
-
+	
 
 	export let data;
 	let display = "";
@@ -18,6 +18,7 @@
 		exportWasm({addWorld}, "hello");
 
 		display = wasm.init_script();
+		document.body.style.display = "revert"
 	})
 
 </script>
@@ -29,3 +30,16 @@
 	<p>{display}</p>
 {/if}
 
+
+<svelte:window on:keypress={e => {
+
+	if (e.ctrlKey && e.key == "r") {
+		location.reload();
+	}
+}}/>
+
+<style>
+	:global(body) {
+		display: none;
+	}
+</style>
