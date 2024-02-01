@@ -5,7 +5,7 @@
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 	import {type Wasm} from "$lib/path";
-	import { modifyGlobalFetch } from '$lib/utils';
+	import { modifyGlobalFetch, pwrap } from '$lib/utils';
 
 	const PROTOCOL = "fetch";
 
@@ -22,22 +22,29 @@
 	let tauriPath: typeof import("@tauri-apps/api/path");
 	let wasm: Wasm;
 
+	let visible = false;
+
 	// tauriPath module, needs to be dynamically imported
 	// see https://github.com/tauri-apps/tauri/discussions/5271
 	onMount(async () => {
 		tauriPath = await import("@tauri-apps/api/path");
 	});
 
-	// promise wrapper -> makes a promise returns the tuple [data, error]
-	// this prevents an annoying try catch block
-	async function pwrap<T>(promise: Promise<T>): Promise<[T|null, null|string|Error]> {
-		try {
-			return [await promise, null];
-		} catch (e) {
-			return [null, e as string | Error];
-		}
+	// show the document body
+	function showBody() {
+		const mainDiv: HTMLDivElement = document.querySelector(".main")!; 
+		mainDiv.style.display = "revert";
+
+		// when display is set to none, no transitions are played
+		// -> need to wait for the next frame so display is block again 
+		// https://css-tricks.com/so-youd-like-to-animate-the-display-property/
+		// requestAnimationFrame calls a function in the next render frame
+		requestAnimationFrame(() => {
+			visible = true;
+		})
 	}
 
+	// initialize the wasm module
 	async function initializeWasm(wasmPath: string) {
 
 		// converts path to url
@@ -53,8 +60,9 @@
 		await wasm.default();		
 	}
 
+	// called after the user has selected the project path
 	async function onSelectionEnd(event: CustomEvent<any>) {
-		const projectPath: string = event.detail;
+		projectPath = event.detail;
 
 		const wasmPath = await tauriPath.join(projectPath, ...wasmPathSuffix);
 		const [_, err] = await pwrap(initializeWasm(wasmPath));
@@ -67,19 +75,21 @@
 
 		showInitModal = false;
 		display = wasm.init_script();
+		
+		showBody();
 	}
 
 
 </script>
 
 {#if showInitModal}
-<InitModal on:selection_end={onSelectionEnd} />
+	<InitModal on:selection_end={onSelectionEnd} />
 {/if}
 
-{#if display}
-<h1>Hello World in Action!</h1>
-<p>{display}</p>
-{/if}
+<div class="main" class:visible>
+	<h1>Hello World in Action!</h1>
+	<p>{display}</p>
+</div>
 
 <svelte:window on:keypress={e => {
 
@@ -94,12 +104,22 @@
 		height: 100vh;
 		width: 100vw;
 		box-sizing: border-box;
+		position: absolute;
 	}
 
 	h1, p {
 		margin: 10px;
 	}
 
+	.main {
+		opacity: 0;
+		display: none;
+		transition: opacity 0.5s ease-in-out;
+	}
+
+	.main.visible {
+		opacity: 1;
+	}
 
 
 
