@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "yarn run build",
-    "beforeDevCommand": "yarn run dev",
+    "beforeBuildCommand": "vite build",
+    "beforeDevCommand": "vite dev",
     "devPath": "http://localhost:5173",
     "distDir": "../build"
   },
@@ -12,7 +12,19 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "all": false,
+      "dialog": {
+         "open": true
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["/home/winsst/Downloads/**"],
+        "all": true
+      },
+      "http": {
+        "all": true, 
+        "request": true
+      }
     },
     "bundle": {
       "active": true,
@@ -64,5 +76,3 @@
     ]
   }
 }
-
-
