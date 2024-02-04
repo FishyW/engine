@@ -26,7 +26,11 @@ Then inside of your `.vscode/settings.json` file put this in,
     "files.exclude": {
         "**/.[^g]*": true,
         "**/.g[^i]*": true,
-        "node_modules": true
+        "**/node_modules": true,
+        "**/vite.config.ts.timestamp-*": true,
+        "**/*.lock": true
     }
 }
 ```
+
+By default, the config includes .gitignore and excludes node_modules, any files starting with ".", any vite timestamp files, and any files with a lock extension.
