@@ -1,6 +1,5 @@
 use crate::engine::prelude::*;
 
-
 #[wasm_bindgen]
 pub fn init_test() {
     // te

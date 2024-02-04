@@ -7,10 +7,16 @@ vars:
 
 
 includes:
-  # project namespace, includes is used to import another taskfile
+  # lib namespace, includes is used to import another taskfile
   lib:
     taskfile: ./library/Taskfile.yml
     dir: ./library
+
+  # project namespace, includes is used to import another taskfile
+  project:
+    taskfile: ./project/Taskfile.yml
+    dir: ./project
+
 
 
 tasks:

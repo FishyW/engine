@@ -5,6 +5,7 @@ static ROUTER: Mutex<Router> = Mutex::new(Router::new());
 
 use std::{sync::{Mutex, MutexGuard}};
 
+
 pub struct Router {
     events: Vec<Box<dyn Event>>,
 }

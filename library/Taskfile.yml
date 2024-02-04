@@ -38,11 +38,6 @@ tasks:
     dir: ./web
     cmds:
       - yarn dev
-  
-  test-all:
-    cmds:
-      - |
-        echo 'You command here'
 
   # cargo watch
   watch:
