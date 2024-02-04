@@ -1,9 +1,0 @@
-{
-    // source:
-    // https://stackoverflow.com/questions/60565855/how-to-exclude-all-folders-except-one-folder-in-vscode
-    "files.exclude": {
-        "**/.[^g]*": false,
-        "**/.g[^i]*": false,
-        "node_modules": false
-    }
-}
