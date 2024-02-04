@@ -13,7 +13,7 @@ Run `task dev` to preview the app. Run `task build` to build the app. To preview
 ## Project Navigation
 The engine library files (engine-lib) are stored inside of the library directory. A sample project folder used for testing purposes is available inside of the project directory. To test a game without the use of the game engine (effectively you're only viewing the scene view), running `task lib:dev` will host a preview of the game inside of localhost. The relevant files used to preview this game is under `library/web`. You can also think of the files in `library/web` as a simple template project that will eventually be used by the builder. 
 
-Finally, the `src` directory contains Sveltekit (frontend) files used by Tauri and the `src-tauri` directory contains the Tauri Rust (backend) files. 
+Finally, the `src` directory contains Sveltekit (frontend) files used by Tauri and the `src-tauri` directory contains the Tauri Rust (backend) files. The tauri config file can be found in `src-tauri/tauri.conf.json`.
 
 ## Sidenote
 
