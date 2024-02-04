@@ -68,6 +68,7 @@ fn fetch_uri_handler(_app: &AppHandle, req: &Request) -> Result<Response> {
     tauri::http::ResponseBuilder::new()
       .header("Access-Control-Allow-Origin", "*")
       .header("Cache-Control", "no-cache")
+      .header("Content-Length", buf.len())
       .mimetype(mime_type)
       .status(200)
       .body(buf.into())

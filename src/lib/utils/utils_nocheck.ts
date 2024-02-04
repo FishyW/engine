@@ -39,7 +39,10 @@ export function exportWasm(mod: object, namespace?: string) {
 // modifies the fetch api to fetch the wasm file in the correct directory
 // takes in the path to the wasm folder
 export function modifyGlobalFetch(wasmPath: string, protocol: string) {
-    globalThis.webFetch = fetch;
+    // means this function has already been called
+    if (globalThis.webFetch == undefined) {
+        globalThis.webFetch = fetch;
+    }
 
     globalThis.fetch = (url, ...args) => {
         if (isURL(url)) {

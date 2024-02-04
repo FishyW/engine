@@ -1,30 +1,20 @@
 import { browser } from "$app/environment";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { exportWasm } from "$lib/utils";
 
-const PROTOCOL = "fetch";
 
-import { type Wasm, WASM_PATH } from "$lib/path";
-import { modifyGlobalFetch } from "$lib/utils";
+function addWorld(str: string) {
+    return str + " world!";
+}
+
 
 
 export async function load() {
-    
     if (!browser) {
         return;
     }
-
-    // modifies the fetch function to work with wasm
-    modifyGlobalFetch(WASM_PATH, PROTOCOL);
-
-    // converts path to url
-    const file = convertFileSrc(`${WASM_PATH}/project.js`, PROTOCOL);
     
-    // dynamic import the file
-    const wasm: Wasm = await import(/* @vite-ignore */ file);
+    // exports addWorld() to wasm, putting it under the "hello" namespace
+	exportWasm({addWorld}, "hello");
 
-    // call init(), wasm.default() is init()
-    await wasm.default();
-
-    return {wasm};
 }
 

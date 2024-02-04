@@ -7,23 +7,23 @@
     "distDir": "../build"
   },
   "package": {
-    "productName": "test-engine",
+    "productName": "engine",
     "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
       "all": false,
       "dialog": {
-         "open": true
+         "open": true,
+         "message": true
       },
       "protocol": {
         "asset": true,
         "assetScope": ["/home/winsst/Downloads/**"],
         "all": true
       },
-      "http": {
-        "all": true, 
-        "request": true
+      "path": {
+        "all": true
       }
     },
     "bundle": {
