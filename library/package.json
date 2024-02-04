@@ -1,9 +1,0 @@
-{
-    "scripts": {
-        "copy-wasm": "cp project/engine/wasm/* web/src/lib/wasm && cp web/src/lib/wasm/index.ts project/engine/wasm",
-        "build": "cd project && wasm-pack build --target web --out-dir engine/wasm && cd .. && yarn copy-wasm",
-        "dev": "cd web && yarn dev",
-        "cargo-watch": "cargo watch -i .gitignore -i 'pkg/*' -s 'yarn build'",
-        "watch": "concurrently \"yarn cargo-watch\" \"yarn dev\""
-    }
-}
