@@ -1,0 +1,20 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  dev:
+    cmds:
+      - yarn tauri dev
+  
+  build:
+      cmds:
+        - yarn tauri build
+
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true
