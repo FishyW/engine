@@ -5,6 +5,14 @@ version: '3'
 vars:
   GREETING: Hello, World!
 
+
+includes:
+  # project namespace, includes is used to import another taskfile
+  lib:
+    taskfile: ./library/Taskfile.yml
+    dir: ./library
+
+
 tasks:
   dev:
     cmds:
@@ -18,3 +26,4 @@ tasks:
     cmds:
       - echo "{{.GREETING}}"
     silent: true
+
