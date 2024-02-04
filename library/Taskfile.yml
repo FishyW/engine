@@ -10,8 +10,8 @@ vars:
 includes:
   # project namespace, includes is used to import another taskfile
   project:
-    taskfile: ./project/Taskfile.yml
-    dir: ./project
+    taskfile: ../project/Taskfile.yml
+    dir: ../project
 
 # task definitions
 tasks:
@@ -20,13 +20,13 @@ tasks:
   copy-wasm: 
     internal: true
     cmds:
-      - cp project/engine/wasm/* web/src/lib/wasm
+      - cp ../project/engine/wasm/* web/src/lib/wasm
   
   # copies the index.ts file from the web directory to the project directory
   copy-index-ts:
     internal: true
     cmds:
-      - cp web/src/lib/wasm/index.ts project/engine/wasm
+      - cp web/src/lib/wasm/index.ts ../project/engine/wasm
   build:
     cmds:
     # runs tasks in series
@@ -48,8 +48,8 @@ tasks:
   watch:
     cmds:
       - |
-        cargo watch -w src -w project/src -w Cargo.toml -w project/Cargo.toml \
-        -i "web/*" -i "project/src/engine/wasm/*" \
+        cargo watch -w src -w ../project/src -w Cargo.toml -w ../project/Cargo.toml \
+        -i "web/*" -i "../project/src/engine/wasm/*" \
         -s 'task build'
 
   watch-all:

@@ -11,7 +11,3 @@ struct MyObject {
     x: i32
 }
 
-fn main() {
-    MyObject{"hello", "world"};
-}
-
