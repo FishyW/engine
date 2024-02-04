@@ -23,9 +23,6 @@ Then inside of your `.vscode/settings.json` file put this in,
 
 ```json
 {
-    // info source:
-    // https://stackoverflow.com/questions/60565855/how-to-exclude-all-folders-except-one-folder-in-vscode
-    // excludes node_modules and all files starting with "." except for .gitignore 
     "files.exclude": {
         "**/.[^g]*": true,
         "**/.g[^i]*": true,
