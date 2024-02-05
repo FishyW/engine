@@ -41,6 +41,13 @@ tasks:
     cmds:
       - yarn dev
 
+  # build the macro
+  macro:
+    dir: ./macros
+    cmds:
+      - cargo build
+
+
   # cargo watch
   watch:
     cmds:
