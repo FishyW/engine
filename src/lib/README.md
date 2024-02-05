@@ -6,5 +6,5 @@ export const WASM_PATH = <path>;
 ```
 
 Note that `<path>` is the path to your wasm folder (inside of the project folder) for example,
-`/home/<user>/Documents/engine_lib/project/engine/wasm`. It is recommended to specify an absolute path instead of a relative path. 
+`/home/<user>/Documents/engine/project/build/wasm`. It is recommended to specify an absolute path instead of a relative path. 
 

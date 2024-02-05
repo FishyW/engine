@@ -10,7 +10,7 @@
 	const PROTOCOL = "fetch";
 
 	// project/engine/wasm
-	const wasmPathSuffix = ["engine", "wasm"];
+	const wasmPathSuffix = ["build", "wasm"];
 	const wasmJSName = "project.js";
 
 	// variables

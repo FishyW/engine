@@ -7,5 +7,5 @@ members = [
 ]
 
 default-members = ["src-tauri"]
-
+resolver = "2"
 

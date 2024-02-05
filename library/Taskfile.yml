@@ -21,6 +21,7 @@ tasks:
   copy-wasm: 
     internal: true
     cmds:
+      # the weird {{.<var>}} notation is a variable
       - cp {{.PROJECT_WASM_PATH}}/* {{.WEB_WASM_PATH}}
   
   # copies the index.ts file from the web directory to the project directory
@@ -45,10 +46,10 @@ tasks:
     cmds:
       - |
         cargo watch -w src -w ../project/src -w Cargo.toml -w ../project/Cargo.toml \
-        -i "web/*" -i "../project/src/engine/wasm/*" \
         -s 'task build'
 
   watch-all:
     # execute both tasks concurrently
     deps: [watch, dev]
   
+
