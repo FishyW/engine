@@ -17,7 +17,7 @@ The engine library files (engine-lib) are stored inside of the library directory
 
 Finally, the `src` directory contains Sveltekit (frontend) files used by Tauri and the `src-tauri` directory contains the Tauri Rust (backend) files. The tauri config file can be found in `src-tauri/tauri.conf.json`.
 
-## Sidenote
+## Hiding Files
 
 Also, due to the sheer amount of files the project directory, I recommend getting the [Toggle Excluded Files](https://marketplace.visualstudio.com/items?itemName=amodio.toggle-excluded-files) extension to toggle/untoggle excluded files. Note you can toggle excluded files using a shortcut (`Ctrl + Shift + A`) or by clicking on the eye icon on top of the file explorer side bar. 
 
