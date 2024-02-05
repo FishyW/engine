@@ -1,0 +1,18 @@
+/home/winsst/Downloads/engine/engine/target/debug/deps/libselectors-c3129cb923867b27.rmeta: /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/lib.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/attr.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/bloom.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/builder.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/context.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/matching.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/nth_index_cache.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/parser.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/sink.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/tree.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/visitor.rs /home/winsst/Downloads/engine/engine/target/debug/build/selectors-70551330b4d1a173/out/ascii_case_insensitive_html_attributes.rs
+
+/home/winsst/Downloads/engine/engine/target/debug/deps/selectors-c3129cb923867b27.d: /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/lib.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/attr.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/bloom.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/builder.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/context.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/matching.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/nth_index_cache.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/parser.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/sink.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/tree.rs /home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/visitor.rs /home/winsst/Downloads/engine/engine/target/debug/build/selectors-70551330b4d1a173/out/ascii_case_insensitive_html_attributes.rs
+
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/lib.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/attr.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/bloom.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/builder.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/context.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/matching.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/nth_index_cache.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/parser.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/sink.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/tree.rs:
+/home/winsst/.cargo/registry/src/index.crates.io-6f17d22bba15001f/selectors-0.22.0/visitor.rs:
+/home/winsst/Downloads/engine/engine/target/debug/build/selectors-70551330b4d1a173/out/ascii_case_insensitive_html_attributes.rs:
+
+# env-dep:OUT_DIR=/home/winsst/Downloads/engine/engine/target/debug/build/selectors-70551330b4d1a173/out
