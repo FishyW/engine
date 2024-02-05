@@ -1,0 +1,10 @@
+# https://taskfile.dev
+# basically a modern makefile
+
+version: '3'
+
+tasks:
+  build:
+    cmds:
+     - wasm-pack build --target web --out-dir "build/wasm"
+  

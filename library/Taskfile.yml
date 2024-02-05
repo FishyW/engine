@@ -1,0 +1,55 @@
+# https://taskfile.dev
+# basically a modern makefile
+
+version: '3'
+
+
+vars:
+  PROJECT_WASM_PATH: ../project/build/wasm
+  WEB_WASM_PATH: web/src/lib/wasm
+
+includes:
+  # project namespace, includes is used to import another taskfile
+  project:
+    taskfile: ../project/Taskfile.yml
+    dir: ../project
+
+# task definitions
+tasks:
+
+  # copies the wasm from the project directory to the web directory
+  copy-wasm: 
+    internal: true
+    cmds:
+      # the weird {{.<var>}} notation is a variable
+      - cp {{.PROJECT_WASM_PATH}}/* {{.WEB_WASM_PATH}}
+  
+  # copies the index.ts file from the web directory to the project directory
+  copy-index-ts:
+    internal: true
+    cmds:
+      - cp {{.WEB_WASM_PATH}}/index.ts {{.PROJECT_WASM_PATH}}
+  build:
+    cmds:
+    # runs tasks in series
+    - task: project:build
+    - task: copy-wasm
+    - task: copy-index-ts
+
+  dev:
+    dir: ./web
+    cmds:
+      - yarn dev
+
+  # cargo watch
+  watch:
+    cmds:
+      - |
+        cargo watch -w src -w ../project/src -w Cargo.toml -w ../project/Cargo.toml \
+        -s 'task build'
+
+  watch-all:
+    # execute both tasks concurrently
+    deps: [watch, dev]
+  
+

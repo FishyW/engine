@@ -1,0 +1,29 @@
+# https://taskfile.dev
+
+version: '3'
+
+includes:
+  # lib namespace, includes is used to import another taskfile
+  lib:
+    taskfile: ./library/Taskfile.yml
+    dir: ./library
+
+  # project namespace, includes is used to import another taskfile
+  project:
+    taskfile: ./project/Taskfile.yml
+    dir: ./project
+
+tasks:
+  dev:
+    cmds:
+      - yarn tauri dev
+  
+  build:
+      cmds:
+        - yarn tauri build
+
+  # default task, simply running task, runs task dev
+  default:
+    cmds:
+      - task: dev
+

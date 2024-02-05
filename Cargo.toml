@@ -1,0 +1,11 @@
+# Virtual Workspace, mainly for Vscode's Rust Analyzer to work
+[workspace]
+members = [
+    "src-tauri",
+    "library",
+    "project"
+]
+
+default-members = ["src-tauri"]
+resolver = "2"
+
