@@ -5,7 +5,7 @@
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 	import {type Wasm} from "$lib/path";
-	import { modifyGlobalFetch, pwrap } from '$lib/utils';
+	import { modifyGlobalFetch, pwrap, callInit } from '$lib/utils';
 
 	const PROTOCOL = "fetch";
 
@@ -57,7 +57,8 @@
 		modifyGlobalFetch(wasmPath, PROTOCOL);
 
 		// call init(), wasm.default() is init()
-		await wasm.default();		
+		await wasm.default();
+		callInit(wasm);
 	}
 
 	// called after the user has selected the project path
