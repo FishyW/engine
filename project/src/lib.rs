@@ -3,12 +3,12 @@ THIS CODE IS AUTO GENERATED, DO NOT MODIFY ANYTHING IN THIS FILE
 (except if ur a dev :\)
 */
 
+mod engine {
+    pub mod prelude;
+}
+
 use crate::engine::prelude::*;
 
-// auto generate code that makes it possible to 
-// do use components::Hello;
-engine_lib::macros
-    ::generate_project_imports!();
 
 
 #[wasm_bindgen(js_namespace = console)]
