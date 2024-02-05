@@ -1,3 +1,4 @@
+# Virtual Workspace, mainly for Vscode's Rust Analyzer to work
 [workspace]
 members = [
     "src-tauri",

@@ -5,7 +5,8 @@ version: '3'
 
 
 vars:
-  GREETING: Hello, World!
+  PROJECT_WASM_PATH: ../project/build/wasm
+  WEB_WASM_PATH: web/src/lib/wasm
 
 includes:
   # project namespace, includes is used to import another taskfile
@@ -20,13 +21,13 @@ tasks:
   copy-wasm: 
     internal: true
     cmds:
-      - cp ../project/engine/wasm/* web/src/lib/wasm
+      - cp {{.PROJECT_WASM_PATH}}/* {{.WEB_WASM_PATH}}
   
   # copies the index.ts file from the web directory to the project directory
   copy-index-ts:
     internal: true
     cmds:
-      - cp web/src/lib/wasm/index.ts ../project/engine/wasm
+      - cp {{.WEB_WASM_PATH}}/index.ts {{.PROJECT_WASM_PATH}}
   build:
     cmds:
     # runs tasks in series
@@ -51,7 +52,3 @@ tasks:
     # execute both tasks concurrently
     deps: [watch, dev]
   
-  default:
-    cmds:
-      - echo "{{.GREETING}}"
-    silent: true

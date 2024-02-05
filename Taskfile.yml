@@ -2,10 +2,6 @@
 
 version: '3'
 
-vars:
-  GREETING: Hello, World!
-
-
 includes:
   # lib namespace, includes is used to import another taskfile
   lib:
@@ -17,8 +13,6 @@ includes:
     taskfile: ./project/Taskfile.yml
     dir: ./project
 
-
-
 tasks:
   dev:
     cmds:
@@ -28,8 +22,8 @@ tasks:
       cmds:
         - yarn tauri build
 
+  # default task, simply running task, runs task dev
   default:
     cmds:
-      - echo "{{.GREETING}}"
-    silent: true
+      - task: dev
 
