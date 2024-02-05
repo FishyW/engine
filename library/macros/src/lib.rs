@@ -11,7 +11,7 @@ use quote::quote;
 pub fn declare(input: TokenStream) -> TokenStream {
     let input = proc_macro2::TokenStream::from(input);
 
-
+    
     let output = quote!(
         #input
     );
