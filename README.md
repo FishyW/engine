@@ -10,6 +10,8 @@ This project uses `go-task` as a task runner to build the project files. Think o
 
 Run `task dev` to preview the app. Run `task build` to build the app. To preview the library, run `task lib:dev`. Run `task lib:build` to build the Rust project files (and prepare it for library preview). To watch the project Rust files (and library Rust files) run `task lib:watch`. To watch both Rust files and Svelte files in `library/web`, run `task lib:watch-all`.
 
+One final thing to do is to add your `path.ts` file which is used to provide the engine with type definitions for your wasm scripts. `path.ts` should be added to the `src/lib/` directory. Check the `README.md` file in that directory for more details.
+
 ## Project Navigation
 The engine library files (engine-lib) are stored inside of the library directory. A sample project folder used for testing purposes is available inside of the project directory. To test a game without the use of the game engine (effectively you're only viewing the scene view), running `task lib:dev` will host a preview of the game inside of localhost. The relevant files used to preview this game is under `library/web`. You can also think of the files in `library/web` as a simple template project that will eventually be used by the builder. 
 
