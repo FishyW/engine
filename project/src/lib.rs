@@ -9,7 +9,8 @@ mod engine {
 
 use crate::engine::prelude::*;
 
-declare!();
+
+declare!("components");
 
 #[wasm_bindgen(js_namespace = console)]
 extern "C" {
@@ -26,11 +27,4 @@ pub fn init_script() -> String {
     return add_world("Hello");
 }
 
-// mod me {
-//     use crate::engine::prelude::*;
-//     #[wasm_bindgen]
-//     pub fn cool_world() {
-
-//     }
-// }
 
