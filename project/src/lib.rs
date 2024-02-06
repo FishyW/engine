@@ -29,3 +29,5 @@ extern "C" {
 pub fn init_script() -> String {
     return add_world("Hello");
 }
+
+
