@@ -3,14 +3,17 @@ THIS CODE IS AUTO GENERATED, DO NOT MODIFY ANYTHING IN THIS FILE
 (except if ur a dev :\)
 */
 
-mod engine {
+pub mod engine {
     pub mod prelude;
 }
 
 use crate::engine::prelude::*;
 
-
-declare!("components");
+declare!("src/components");
+declare!("src/actions");
+declare!("src/events");
+declare!("src/managers");
+declare!("src/objects");
 
 #[wasm_bindgen(js_namespace = console)]
 extern "C" {
@@ -26,6 +29,3 @@ extern "C" {
 pub fn init_script() -> String {
     return add_world("Hello");
 }
-
-
-

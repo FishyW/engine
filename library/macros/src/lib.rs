@@ -1,13 +1,15 @@
 use proc_macro::TokenStream;
 
-
 mod declare;
 
-/* 
+mod rules;
+
+
+/*
 Auto generated code sample
 // pub here is optional
 <pub> mod actions {
-    // no pub here? users won't be able to write actions::action::test; 
+    // no pub here? users won't be able to write actions::action::test;
    mod action;
    // pub is always here, since the person who declares the module
    // should always be able to access its contents
@@ -28,9 +30,3 @@ pub fn declare(input: TokenStream) -> TokenStream {
     let input = proc_macro2::TokenStream::from(input);
     declare::parse_declare(input).into()
 }
-
-
-
-
-
-

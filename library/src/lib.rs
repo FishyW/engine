@@ -1,18 +1,16 @@
 use router::Router;
-use structs::event::{RandomEvent, Event};
+use structs::event::{Event, RandomEvent};
 
 use wasm_bindgen::prelude::*;
 
 pub use macros;
 
-mod structs;
 mod router;
-
+mod structs;
 
 pub fn init() {
     // assigns the event to the router
     RandomEvent::new();
-
 }
 
 #[wasm_bindgen]
