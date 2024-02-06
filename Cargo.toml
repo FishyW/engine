@@ -3,9 +3,9 @@
 members = [
     "src-tauri",
     "library",
-    "project"
+    "project",
 ]
 
 default-members = ["src-tauri"]
-resolver = "2"
+resolver = "1"
 
