@@ -38,6 +38,9 @@ fn fetch_uri_handler(_app: &AppHandle, req: &Request) -> Result<Response> {
     // can't use url package since ../../ isn't a valid url
     let path = url.split("/").skip(3).collect::<Vec<&str>>().join("/");
 
+    // remove the query parameters
+    let path = path.split("?").next().unwrap_or(&path);
+
     // reads the file and stores it into a binary vector
     let buf = match fs::read(&path) {
         Ok(buf) => buf,

@@ -10,6 +10,8 @@ This project uses `go-task` as a task runner to build the project files. Think o
 
 Run `task dev` to preview the app. Run `task build` to build the app. To preview the library, run `task lib:dev`. Run `task lib:build` to build the Rust project files (and prepare it for library preview). To watch the project Rust files (and library Rust files) run `task lib:watch`. To watch both Rust files and Svelte files in `library/web`, run `task lib:watch-all`.
 
+Finally, run `task watch` to watch both project/lib Rust files and your Rust/JS Tauri files. 
+
 One final thing to do is to add your `path.ts` file which is used to provide the engine with type definitions for your wasm scripts. `path.ts` should be added to the `src/lib/` directory. Check the `README.md` file in that directory for more details.
 
 ## Project Navigation

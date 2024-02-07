@@ -176,10 +176,9 @@ pub fn parse_declare(args: TokenStream2) -> TokenStream2 {
             .into_compile_error();
     });
 
-
     quote!(
             #pub_key mod #module {
-                use engine_lib::macros::declare;
+                use lib::macros::declare;
             #(
                 // no pub here? users won't be able to write actions::action::test;
                mod #modules;

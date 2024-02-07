@@ -46,6 +46,33 @@ pub fn asset(attr: TokenStream, input: TokenStream) -> TokenStream {
     ).into()
 }
 
+#[proc_macro_attribute]
+pub fn asset_object(attr: TokenStream, input: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+
+#[proc_macro_attribute]
+pub fn asset_component(attr: TokenStream, input: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+#[proc_macro_attribute]
+pub fn asset_manager(attr: TokenStream, input: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+#[proc_macro_attribute]
+pub fn asset_action(attr: TokenStream, input: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+#[proc_macro_attribute]
+pub fn asset_event(attr: TokenStream, input: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
+
+
 /// Includes a component
 /// only ever put this below an asset(object) macro
 /// this macro is used to include a list of components 
@@ -63,10 +90,15 @@ pub fn include(attr: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::new()
 }
 
+
 #[proc_macro_attribute]
-pub fn asset_object(attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn receiver(attr: TokenStream, input: TokenStream) -> TokenStream {
     TokenStream::new()
 }
 
+#[proc_macro_attribute]
+pub fn interceptor(attr: TokenStream, input: TokenStream) -> TokenStream {
+    TokenStream::new()
+}
 
 

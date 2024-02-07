@@ -1,26 +1,24 @@
-use router::Router;
-use structs::event::{Event, RandomEvent};
+mod router;
+mod asset;
+mod prelude;
 
-use wasm_bindgen::prelude::*;
 
 pub use macros;
+use id::{Id, Keys};
 
-mod router;
-mod structs;
+// note this numbers are generated from some third party website
+// so these keys aren't 100% secure, but it should be sufficient for this app
+const KEYS: Keys = (
+    0xcb543806d99c8d5d, 
+    0x2dc46f11ab6627e0, 
+    0x422656cf8a78f7f2, 
+    0x49177b25554b5887
+);
 
+
+// library's init function call inside of project/lib.rs
 pub fn init() {
-    // assigns the event to the router
-    RandomEvent::new();
-}
-
-#[wasm_bindgen]
-pub fn names() -> Vec<String> {
-    let val = Router::instance().names();
-
-    val
-}
-
-#[wasm_bindgen]
-pub fn add_event() {
-    RandomEvent::new();
+    Id::init(KEYS);
+    let id = Id::new();
+    log::debug!("{}", id.to_hex());
 }

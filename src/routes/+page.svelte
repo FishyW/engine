@@ -1,33 +1,21 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import InitModal from "$lib/components/InitModal.svelte";
-	// import type * as path from '@tauri-apps/api/path';
-	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
-	import {type Wasm} from "$lib/path";
-	import { modifyGlobalFetch, pwrap, callInit } from '$lib/utils';
-
-	const PROTOCOL = "fetch";
-
-	// project/engine/wasm
-	const wasmPathSuffix = ["build", "wasm"];
-	const wasmJSName = "project.js";
+	import { pwrap } from '$lib/utils';
+	import { initTauri, initializeWasm, wasm } from '$lib/init';
 
 	// variables
 	let display = "";
 	let projectPath = "";
 	let showInitModal = true;
 
-	// dynamic modules
-	let tauriPath: typeof import("@tauri-apps/api/path");
-	let wasm: Wasm;
-
 	let visible = false;
 
 	// tauriPath module, needs to be dynamically imported
 	// see https://github.com/tauri-apps/tauri/discussions/5271
 	onMount(async () => {
-		tauriPath = await import("@tauri-apps/api/path");
+		await initTauri();
 	});
 
 	// show the document body
@@ -45,28 +33,12 @@
 	}
 
 	// initialize the wasm module
-	async function initializeWasm(wasmPath: string) {
-
-		// converts path to url
-		const file = convertFileSrc(await tauriPath.join(wasmPath, wasmJSName), PROTOCOL);
 	
-		// dynamic import the file
-		wasm = await import(/* @vite-ignore */ file);
-	
-		// modifies the fetch function to work with wasm
-		modifyGlobalFetch(wasmPath, PROTOCOL);
-
-		// call init(), wasm.default() is init()
-		await wasm.default();
-		callInit(wasm);
-	}
-
 	// called after the user has selected the project path
 	async function onSelectionEnd(event: CustomEvent<any>) {
 		projectPath = event.detail;
 
-		const wasmPath = await tauriPath.join(projectPath, ...wasmPathSuffix);
-		const [_, err] = await pwrap(initializeWasm(wasmPath));
+		const [_, err] = await pwrap(initializeWasm(projectPath));
 
 		if (err != null) {
 			alert("Invalid project folder!");
@@ -75,7 +47,6 @@
 		}
 
 		showInitModal = false;
-		display = wasm.init_script();
 		
 		showBody();
 	}
@@ -93,9 +64,18 @@
 </div>
 
 <svelte:window on:keypress={e => {
+	
 
-	if (e.ctrlKey && e.key == "r") {
+	// Ctrl + Shift + R to reload fully 
+	if (e.ctrlKey && e.shiftKey && e.key == "R") {
 		location.reload();
+	}
+
+	// Ctrl + R to reload wasm module
+	// Also clears the console
+	if (e.ctrlKey && e.key == "r" && projectPath) {
+		console.clear();
+		initializeWasm(projectPath);
 	}
 }}/>
 
@@ -121,7 +101,5 @@
 	.main.visible {
 		opacity: 1;
 	}
-
-
 
 </style>

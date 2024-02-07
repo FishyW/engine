@@ -5,7 +5,7 @@ DO NOT MODIFY ANYTHING ELSE BESIDES THAT
 
 pub mod engine {
     pub mod prelude;
-    use engine_lib::macros::declare;
+    use lib::macros::declare;
     declare!("src/engine/scene");
 }
 
@@ -27,14 +27,16 @@ extern "C" {
     fn log(s: &str);
 }
 
-#[wasm_bindgen(js_namespace = hello)]
-extern "C" {
-    fn add_world(s: &str) -> String;
+#[wasm_bindgen]
+pub fn init_start()  {
+    wasm_logger::init(wasm_logger::Config::default());
+    lib::init();
+
 }
 
 #[wasm_bindgen]
-pub fn init_script() -> String {
-    return add_world("Hello");
+pub fn init_blabla()  {
+    log::debug!("Oh no!");
 }
 
 

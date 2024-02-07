@@ -22,6 +22,11 @@ tasks:
       cmds:
         - yarn tauri build
 
+  # runs task lib:watch and task dev concurrently
+  watch:
+    deps: [lib:watch, dev]
+
+
   # default task, simply running task, runs task dev
   default:
     cmds:
