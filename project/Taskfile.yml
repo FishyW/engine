@@ -8,3 +8,8 @@ tasks:
     cmds:
      - wasm-pack build --target web --out-dir "build/wasm"
   
+
+  # runs cargo expand
+  expand:
+    cmds:
+      - cargo expand

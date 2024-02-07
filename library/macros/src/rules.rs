@@ -1,27 +1,9 @@
 /// Macro Rules declarative (helper) macros
 
-// this needs to be implemented as a macro
-// since input.peek(T: Token) doesn't work for some reason
-// next helper macro, goes to the next token and returns Some(token)
-// if the next token is the specified token
-// otherwise returns None and it doesn't go to the next token
-macro_rules! next {
-    // $buf is a metavariable called buf, which is of type ident: identifier
-    // $token is a metavariable called token, which is of type tt -> token tree
-    // token tree is the most generic
-    // $(A)+ -> matches A one or more times
-    ($input:ident, $($token:tt)+) => {
-        if $input.peek($($token)+) {
-            // specify the entire path to avoid naming collisions
-            // unwrap is fine since we know the token exists
-            std::option::Option::Some($input.parse::<$($token)+>().unwrap())
-        } else { None }
-    }
-}
 
 // similar to parse_macro_input but for parse2
 macro_rules! parse {
-    ($tokens:ident as $typeto:tt) => {
+    ($tokens:ident as $typeto:ty) => {
         match syn::parse2::<$typeto>($tokens) {
             std::result::Result::Ok(arg) => arg,
             std::result::Result::Err(e) => return e.into_compile_error(),
@@ -32,12 +14,28 @@ macro_rules! parse {
 // ident! macro
 // converts a string to an ident
 // uses a macro since the second argument is optional
+// panics on error
+// use try_ident if you want do do error handling
 macro_rules! ident {
     ($string:expr) => {
         syn::Ident::new($string, Span::call_site())
     };
     ($string:expr, $site:expr) => {
         syn::Ident::new($string, $site)
+    };
+    
+}
+
+// same as ident!() but it returns an Result when it fails, instead of panicking
+macro_rules! try_ident {
+    ($string:expr) => {
+        syn::parse_str::<syn::Ident>($string)
+    };
+    ($string:expr, $site:expr) => {
+        syn::parse_str::<syn::Ident>($string)
+            .map(|id| {
+                return id.set_span($site); id
+        })
     };
 }
 
@@ -46,16 +44,16 @@ macro_rules! ident {
 macro_rules! unwrap {
     ($item:expr, || $block:block) => {
         match $item {
-            Some(v) => v,
-            None => $block,
+            std::option::Option::Some(v) => v,
+            std::option::Option::None => $block,
         }
     };
-    ($item:expr, |$err:ident| $block:block) => {
+    ($item:expr, |$err:pat_param| $block:block) => {
         match $item {
-            Ok(v) => v,
-            Err($err) => $block,
+            std::result::Result::Ok(v) => v,
+            std::result::Result::Err($err) => $block,
         }
     };
 }
 
-pub(crate) use {ident, next, parse, unwrap};
+pub(crate) use {ident, parse, unwrap, try_ident};

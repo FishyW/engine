@@ -47,7 +47,6 @@ tasks:
     cmds:
       - cargo build
 
-
   # cargo watch
   watch:
     cmds:
@@ -58,5 +57,7 @@ tasks:
   watch-all:
     # execute both tasks concurrently
     deps: [watch, dev]
+
+  
   
 

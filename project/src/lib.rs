@@ -1,15 +1,22 @@
 /*
-THIS CODE IS AUTO GENERATED, DO NOT MODIFY ANYTHING IN THIS FILE
-(except if ur a dev :\)
+ONLY MODIFY THIS FILE IF YOU WANT TO ADD YOUR OWN SUBMODULES
+DO NOT MODIFY ANYTHING ELSE BESIDES THAT
 */
 
 pub mod engine {
     pub mod prelude;
+    use engine_lib::macros::declare;
+    declare!("src/engine/scene");
 }
 
 use crate::engine::prelude::*;
 
-declare!("src/components");
+// module and submodule declarations
+declare!("src/components", {
+    // declare a submodule called hello
+    declare!("src/components/hello");
+});
+
 declare!("src/actions");
 declare!("src/events");
 declare!("src/managers");
@@ -29,5 +36,10 @@ extern "C" {
 pub fn init_script() -> String {
     return add_world("Hello");
 }
+
+
+#[asset(object)]
+#[include()]
+struct Test;
 
 
