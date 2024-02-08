@@ -1,8 +1,3 @@
-
-// pub const 
-
-// static SALT: 
-
 // ahash is fast for smaller keys, which is ideal
 
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -11,12 +6,13 @@ use ahash::RandomState;
 
 static mut HASHER: Option<RandomState> = None;
 
-#[derive(Debug)]
+#[derive(Debug, Hash, Clone, Copy)]
 pub struct Id {
     id: u64
 }
 
 pub type Keys = (u64, u64, u64, u64);
+
 
 impl Id {
     // call init at the very beginning

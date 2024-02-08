@@ -663,6 +663,8 @@ dependencies = [
 name = "engine_lib"
 version = "0.1.0"
 dependencies = [
+ "ahash",
+ "anyhow",
  "getrandom 0.2.12",
  "id",
  "log",
