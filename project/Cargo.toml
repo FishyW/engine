@@ -12,6 +12,9 @@ wasm-bindgen = "0.2.84"
 # for easy logging, actually remove this in the template folder
 log = "0.4.6"
 wasm-logger = "0.2.0"
+ahash = "0.8"
+lazy_static = "1.4"
+
 
 [lib]
 crate-type = ["cdylib", "rlib"]

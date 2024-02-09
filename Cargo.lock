@@ -2039,7 +2039,9 @@ dependencies = [
 name = "project"
 version = "0.1.0"
 dependencies = [
+ "ahash",
  "engine_lib",
+ "lazy_static",
  "log",
  "wasm-bindgen",
  "wasm-logger",
