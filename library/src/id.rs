@@ -1,6 +1,8 @@
 // library implementation of Id
 
 
+use std::fmt;
+
 use id::{IdBuilder,  Keys};
 pub use id::IdLike;
 
@@ -36,5 +38,11 @@ impl IdLike for Id {
 impl Default for Id {
     fn default() -> Self {
         ID_BUILDER.id()
+    }
+}
+
+impl fmt::Debug for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_hex())
     }
 }

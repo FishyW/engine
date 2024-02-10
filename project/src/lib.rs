@@ -30,16 +30,8 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn init_start()  {
-    wasm_logger::init(wasm_logger::Config::default());
     lib::init();
-
 }
-
-#[wasm_bindgen]
-pub fn init_blabla()  {
-    log::debug!("Oh no!");
-}
-
 
 #[asset(object)]
 #[include()]

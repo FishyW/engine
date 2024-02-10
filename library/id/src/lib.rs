@@ -1,5 +1,6 @@
 // ahash is fast for smaller keys, which is ideal
 
+use core::fmt;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use ahash::RandomState;
@@ -28,7 +29,7 @@ impl IdBuilder {
     }
 }
 
-pub trait IdLike: Hash + Clone + Copy + Eq + PartialEq {
+pub trait IdLike: Hash + Clone + Copy + Eq + PartialEq + fmt::Debug {
     fn new(value: u64) -> Self;
     fn value(&self) -> u64;
 
@@ -37,4 +38,5 @@ pub trait IdLike: Hash + Clone + Copy + Eq + PartialEq {
         format!("{:x}", self.value())
     }
 }
+
 

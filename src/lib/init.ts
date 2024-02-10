@@ -39,8 +39,6 @@ export async function initializeWasm(projectPath: string) {
     wasm = camelize(wasm);
 }
 
-
-
 // initialize the tauri module
 export async function initTauri() {
     const path = await import("@tauri-apps/api/path");
@@ -71,9 +69,9 @@ function callRustInits(wasm: {[key: string]: unknown}) {
         }
     });
 
-
-    initFunctions
-        .concat(initSceneFunctions)
+    // init scene functions get called first
+    initSceneFunctions
+        .concat(initFunctions)
         .forEach((funcName) => {
             (wasm[funcName] as VoidFunc)();
         });

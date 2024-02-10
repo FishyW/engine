@@ -63,6 +63,11 @@
 	<p>{display}</p>
 </div>
 
+<svelte:body on:click={e => {
+	if (projectPath)
+		wasm.eventReceive("click");
+}}/>
+
 <svelte:window on:keypress={e => {
 	
 

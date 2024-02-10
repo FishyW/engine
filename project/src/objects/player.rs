@@ -1,23 +1,27 @@
+
 use crate::engine::prelude::*;
 
 
 #[derive(Default)]
-struct Player {
-    __id: Id,
+pub struct Player {
+    metadata: InstanceMetadata
 }
 
 
 
-use ahash::HashMapExt;
 thread_local!{
     static __PLAYER_INSTANCES_MAP: 
          std::cell::RefCell<
          std::rc::Rc<
-         ahash::HashMap<Id, std::rc::Rc<Player>>
-         >> = 
+         std::cell::RefCell<
+         ahash::HashMap<Id, std::rc::Rc<
+            std::cell::RefCell<Player>>>
+         >>> = 
         std::cell::RefCell::new(
             std::rc::Rc::new(
-                ahash::HashMap::new()
+                std::cell::RefCell::new(
+                    ahash::HashMap::new()
+                )
             )
         );
 }
@@ -29,7 +33,7 @@ lazy_static::lazy_static!(
 
 impl Asset for Player {
     fn metadata(&self) -> InstanceMetadata {
-        InstanceMetadata {id: self.__id}
+        InstanceMetadata {..self.metadata}
     }
    
     
@@ -45,16 +49,28 @@ impl Asset for Player {
         let map = __PLAYER_INSTANCES_MAP.with(|map| {
             std::rc::Rc::clone(&map.borrow())
         });
+
+
         TypeAddress {instances: map}
     }
 
-    fn to_ref(&self) -> std::rc::Rc<Self>
-            where Self:Sized {
+
+    fn register(asset: Self) -> std::rc::Rc<std::cell::RefCell<Self>> {
         __PLAYER_INSTANCES_MAP.with(|map| {
-            let map = map.borrow();
-            let instance = map.get(&self.metadata().id)
-                .expect("Id not found in the map!");
-            std::rc::Rc::clone(&instance)
+            let map = map.borrow_mut();
+            let mut map = map.borrow_mut();
+            let id = asset.metadata().id;
+            let player = std::rc::Rc::new(std::cell::RefCell::new(asset));
+            map.insert(id, std::rc::Rc::clone(&player));
+            player
+        })
+    }
+
+    fn clear(&self) {
+        __PLAYER_INSTANCES_MAP.with(|map| {
+            let map = map.borrow_mut();
+            let mut map = map.borrow_mut();
+            map.clear();
         })
     }
 }
@@ -62,9 +78,14 @@ impl Asset for Player {
 impl Object for Player {}
 
 
-use lib::event::ClickEvent;
+use lib::core::event::ClickEvent;
 impl Receiver<ClickEvent> for Player {
-    fn receive(&self, event: ClickEvent) {
-        log::debug!("Received!");
+    fn receive(&mut self, event: ClickEvent) {
+        log::debug!("Clicked!");
     }
+}
+
+#[wasm_bindgen]
+pub fn init_91dh9h3h329() {    
+    ClickEvent::register(Player::Address());    
 }
