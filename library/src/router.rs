@@ -4,7 +4,7 @@ use crate::prelude::*;
 
 use std::{cell::RefCell, rc::Rc};
 
-type EventMap<T> = HashMap<Id, Box<dyn Register<T>>>;
+type EventMap<T> = HashMap<Id, Box<dyn EventRegister<T>>>;
 
 // given an address, call all receivers inside of that address
 fn call_receiver<'a, T>(event: T, receiver: Rc<RefCell<dyn Receiver<T> + 'a>>)

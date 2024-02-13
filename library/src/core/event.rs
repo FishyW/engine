@@ -13,13 +13,13 @@ use ahash::HashMapExt;
 thread_local!{
     // note this long type is done on purpose due to macro hygiene concerns
     static __CLICK_EVENT_ADDRESSES: std::cell::RefCell<ahash::HashMap<Id, 
-        Box<dyn Register<ClickEvent>>>> = 
+        Box<dyn EventRegister<ClickEvent>>>> = 
         std::cell::RefCell::new(ahash::HashMap::new());
 }
 
 impl Event for ClickEvent {
 
-    fn register(register: impl Register<Self> + 'static) {
+    fn register(register: impl EventRegister<Self> + 'static) {
          __CLICK_EVENT_ADDRESSES.with(|map| {
             let mut map = map.borrow_mut();
             let id = register.register_id();

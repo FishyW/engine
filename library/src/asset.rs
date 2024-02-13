@@ -62,8 +62,6 @@ pub trait Object: SizedAsset {
        where Self:Sized;
 }
 
-
-
 pub trait UnsizedObject: Asset {}
 
 impl <T: Object> UnsizedObject for T {}
@@ -83,6 +81,21 @@ impl <T> InstanceMap<T> {
 }
 
 
+// Registers are any assets or asset types that can be registered
+pub trait Register {
+    // get the id used to register
+    fn register_id(&self) -> Id;
+}
+
+
+// Implement Address for an asset instance (Rc<RefCell<U>>)
+impl <T: Event, U: Receiver<T> + Asset> Address<T> for Rc<RefCell<U>> {
+    // takes ownership of the address
+    fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>> {
+        vec![Rc::clone(&self) as Rc<RefCell<dyn Receiver<T>>>]
+    }
+}
+
 // implement Address for an instance map
 impl <T: Event, U: Receiver<T> + Object> Address<T> 
     for InstanceMap<U> {
@@ -95,16 +108,12 @@ impl <T: Event, U: Receiver<T> + Object> Address<T>
         }
 }
 
-impl <T: Event, U: Receiver<T> + Object> Register<T> for InstanceMap<U> {
+
+
+impl <T> Register for InstanceMap<T> {
     fn register_id(&self) -> Id {
         self.id
     }
 }
-
-
-
-
-
-
 
 
