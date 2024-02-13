@@ -13,10 +13,7 @@ use crate::engine::prelude::*;
 
 
 // module and submodule declarations
-declare!("src/components", {
-    // declare a submodule called hello
-    declare!("src/components/hello");
-});
+declare!("src/components");
 
 declare!("src/actions");
 declare!("src/events");
@@ -29,7 +26,7 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn init_start()  {
+pub fn __init_start()  {
     lib::init();
 }
 

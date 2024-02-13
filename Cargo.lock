@@ -678,6 +678,7 @@ dependencies = [
  "console_error_panic_hook",
  "getrandom 0.2.12",
  "id",
+ "lazy_static",
  "log",
  "macros",
  "wasm-bindgen",

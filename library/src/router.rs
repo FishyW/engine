@@ -1,25 +1,15 @@
 use ahash::HashMap;
-use log::debug;
 
 use crate::prelude::*;
 
-use std::rc::{Rc, Weak};
+use std::{cell::RefCell, rc::Rc};
 
-type EventWeakMap<T> = HashMap<Id, Weak<dyn Register<T>>>;
-
+type EventMap<T> = HashMap<Id, Box<dyn Register<T>>>;
 
 // given an address, call all receivers inside of that address
-fn call_register<T>(event: T, register: Rc<dyn Register<T>>)
+fn call_receiver<'a, T>(event: T, receiver: Rc<RefCell<dyn Receiver<T> + 'a>>)
     where  T:Event {
-    
-    let mut recv = register.receivers();
-
-    recv.iter_mut()
-        .for_each(|recv| {
-            // this should be one of the few borrow_mut() code
-            // do not have a lot of borrow_mut() code inside of the library
-            recv.borrow_mut().receive(event.clone())
-        });
+    receiver.borrow_mut().receive(event);
 }
 
 
@@ -30,26 +20,18 @@ fn call_register<T>(event: T, register: Rc<dyn Register<T>>)
 // note that this function fails silently if the address is already dropped
 pub fn send<T, U>(event: T, address: U)
     where T: Event, U: Address<T> {
-        address.registers().into_iter().for_each(|register| {
-            call_register(event.clone(), register);
+        address.receivers().into_iter().for_each(|receiver| {
+            call_receiver(event.clone(), receiver);
         })
 }
 
 // called by the event system
-pub fn broadcast<T: Event>(event: T, map: &mut EventWeakMap<T>) {
+pub fn broadcast<T: Event>(event: T, map: &mut EventMap<T>) {
 
     map.retain(|_, register| {
-
-        // return false means remove this item from the map
-        // recv.upgrade() becomes None if the underlying data is dropped
-        // if that's the case clean up the data, by removing the data from the map
-        let Some(register) = register.upgrade() else {
-
-            return false;
-        }; 
-
-
-        call_register(event.clone(), register);
+        register.receivers().into_iter().for_each(|recv| {
+            call_receiver(event.clone(), recv);
+        });
         true
     });
 

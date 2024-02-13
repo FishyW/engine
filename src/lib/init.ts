@@ -48,31 +48,45 @@ export async function initTauri() {
 }
 
 type VoidFunc = () => void;
+const initOrder = ["start", "component", "scene", "receiver", "@"];
 
 function callRustInits(wasm: {[key: string]: unknown}) {
-    const initFunctions: string[] = [];
-    const initSceneFunctions: string[] = [];
+    // order of registration is component first, then scene, the receiver
     const allFnNames = Object
                         .keys(wasm)
-                        .filter((key) => typeof wasm[key] === "function");
+                        .filter((key) => typeof wasm[key] === "function")
+                        // remove the init() function, all init function names 
+                        // must start with `init_`
+                        .filter(key => key.startsWith("__init_"));
     
-    allFnNames.forEach((keyName) => {
-        if (keyName.startsWith("init_scene")) {
-            initSceneFunctions.push(keyName);
-        } 
-        else if (keyName == "init_start") {
-            // wasm.init_start() gets called first
-            (wasm[keyName] as VoidFunc)()
-        }
-        else if (keyName.startsWith("init_")) {
-            initFunctions.push(keyName);
-        }
-    });
 
-    // init scene functions get called first
-    initSceneFunctions
-        .concat(initFunctions)
-        .forEach((funcName) => {
+    const initMap: Map<string, string[]> = new Map();
+    allFnNames.forEach((keyName) => {
+        const keyTmp = keyName.replaceAll("_", " ")
+            .trimStart().replaceAll(" ", "_");
+
+        const [_, tmp, ..._rest] = keyTmp.split("_");
+        const key = initOrder.includes(tmp) ? tmp: "@";
+
+        let arr = initMap.get(key);
+        if (arr == undefined) {
+            arr = [];
+        }
+
+        arr.push(keyName);
+        
+        initMap.set(key, arr);
+    });
+    
+
+    initOrder.forEach(val => {
+        const funcNames = initMap.get(val);
+
+        if (funcNames == undefined) {
+            return;
+        }
+        funcNames.forEach(funcName => {
             (wasm[funcName] as VoidFunc)();
-        });
+        })
+    })
 }

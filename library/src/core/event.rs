@@ -1,5 +1,4 @@
 
-use std::{cell::RefCell, rc::Rc};
 
 use crate::{prelude::*, router};
 
@@ -7,32 +6,24 @@ use crate::{prelude::*, router};
 pub struct ClickEvent;
 
 
-use ahash::{HashMapExt};
+use ahash::HashMapExt;
 
 // makes __CLICK_EVENT_RECEIVERS local to the current thread
 // this prevents usage of Arc<> and Mutex<>
 thread_local!{
     // note this long type is done on purpose due to macro hygiene concerns
     static __CLICK_EVENT_ADDRESSES: std::cell::RefCell<ahash::HashMap<Id, 
-        std::rc::Weak<dyn Register<ClickEvent>>>> = 
+        Box<dyn Register<ClickEvent>>>> = 
         std::cell::RefCell::new(ahash::HashMap::new());
 }
 
-
-
 impl Event for ClickEvent {
 
-    fn register(address: impl Address<Self>) {
+    fn register(register: impl Register<Self> + 'static) {
          __CLICK_EVENT_ADDRESSES.with(|map| {
-            address.registers()
-                .into_iter().for_each(|register| {
-                let mut map = map.borrow_mut();
-                let id = register.register_id();
-                let register = std::rc::Rc::downgrade(&register);
-                // note that only the weak reference is stored, not the strong reference
-                map.insert(id, register);
-                
-            })
+            let mut map = map.borrow_mut();
+            let id = register.register_id();
+            map.insert(id, Box::new(register));
          })
     }
 

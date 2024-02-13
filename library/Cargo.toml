@@ -12,6 +12,7 @@ wasm-bindgen = "0.2"
 getrandom = { version = "0.2", features = ["js"] }
 ahash = "0.8.7"
 anyhow = "1.0.79"
+lazy_static = "1.4"
 
 log = "0.4"
 wasm-logger = "0.2"

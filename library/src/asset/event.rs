@@ -44,33 +44,39 @@ macro_rules! address {
     }
 }
 
+
 // 'static means event must be implemented for an owned type
 pub trait Event: Clone + 'static {
 
-    fn send(self, target: impl Address<Self>) 
-        where Self:Sized;
-
-    fn broadcast(self) 
-        where Self:Sized;
+    fn send(self, target: impl Address<Self>);
+    
+    fn broadcast(self);
 
     // register an address to this event
     // this iterates through all registers specified by the address
     // and registers each register to the event
-    fn register(item: impl Address<Self>);
+    fn register(item: impl Register<Self> + 'static);
 
-    // cleanup function
+    // cleanup function when scene changes
     fn clear(self);
-
 }
 
-pub trait Receiver<T: Event>: 'static{
+pub trait EventUnsized {}
+
+impl <T: Event> EventUnsized for T {}
+
+
+pub trait Receiver<T: Event> {
     fn receive(&mut self, event: T);
+
 }
 
 // an address gives a vector of registers, which are usually assets
 // that has been programmed to receive a certain event
 pub trait Address<T: Event> {
-    fn registers(self) -> Vec<Rc<dyn Register<T>>>;
+    // needs RefCell since receive() borrows &mut self -> needs a mutable borrow
+    // or receivers
+    fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>>;
 }
 
 // Registers are any assets or asset types that can be registered
@@ -78,90 +84,44 @@ pub trait Address<T: Event> {
 // since an object type can be registered, but an object type doesn't have a receiver
 // Address and Register is different, since an Object Group can't be registered
 // but an Object Group can made into an address
-pub trait Register<T: Event>: 'static {
-    // Rc instead of Weak, implementers of Registerable 
-    // must guarantee that the receiver in question exists
-    fn receivers(&self) -> Vec<Rc<RefCell<dyn Receiver<T>>>>;
-
+pub trait Register<T: Event>: Address<T> {
      // get the id used to register
      fn register_id(&self) -> Id;
 }
 
 
 
-pub struct TypeAddress<T: Asset> {
-    // reference to the instances vector
-    // RefCell allows interior mutability, since Rc by default doesn't allow the map to be mutable
-    pub instances: Rc<RefCell<HashMap<Id, Rc<RefCell<T>>>>>
-}
-
-// HashMap instance implementation for Register<T>
-// HashMap instance is the static hashmap you see at the top when you derive assets 
-impl <T: Event, U: Asset> Register<T> for RefCell<HashMap<Id, Rc<RefCell<U>>>>
-    where U: Receiver<T> {
-
-    fn receivers(&self) -> Vec<Rc<RefCell<dyn Receiver<T>>>> {
-
-        self.borrow().iter().map(|(_, instance)| {
-            Rc::clone(instance) as Rc<RefCell<dyn Receiver<T>>>
-            
-        }).collect::<Vec<_>>()  
-    }
-
-    fn register_id(&self) -> Id {
-        U::Metadata().id
-    }
-}
-
-// implement Address for Type Addresses
-impl <T: Event, U: Receiver<T> + Asset + 'static> Address<T> 
-    for TypeAddress<U> {
-
-        fn registers(self) -> Vec<Rc<dyn Register<T>>> {
-            // as keyword to cast between SmartPointer<A> to SmartPointer<dyn B>
-            vec![Rc::clone(&self.instances) as Rc<dyn Register<T>>]
-        }
-       
-}
-
-// implement Register for an asset instance
-impl <T: Event, U: Receiver<T> + Asset> Register<T> for Rc<RefCell<U>> {
-    fn receivers(&self) -> Vec<Rc<RefCell<dyn Receiver<T>>>> {
-        vec![Rc::clone(self) as Rc<RefCell<dyn Receiver<T>>>]
-    }
-    
-    fn register_id(&self) -> Id {
-        self.borrow().metadata().id
-    }
-}
-
-
-// Implement Address for an asset instance
+// Implement Address for an asset instance (Rc<RefCell<U>>)
 impl <T: Event, U: Receiver<T> + Asset> Address<T> for Rc<RefCell<U>> {
     // takes ownership of the address
-    fn registers(self) -> Vec<Rc<dyn Register<T>>> {
-        vec![Rc::new(self)]
+    fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>> {
+        vec![Rc::clone(&self) as Rc<RefCell<dyn Receiver<T>>>]
     }
 }
 
-pub struct AddressBuilder<T: Event> {
-    registers: Vec<Rc<dyn Register<T>>>
+
+
+// creates an address by creating a vector of addresses
+pub struct AddressBuilder<'a, T: Event> {
+    addresses: Vec<Box<dyn Address<T> + 'a>>
 }
 
-impl <T: Event> AddressBuilder<T> {
+impl <'a, T: Event> AddressBuilder<'a, T> {
     pub fn new() -> Self {
-        AddressBuilder{registers: vec![]}
+        AddressBuilder{addresses: vec![]}
     }
 
-    pub fn add(mut self, address: impl Address<T>) -> Self {
-        self.registers.append(&mut address.registers());
+    pub fn add(mut self, address: impl Address<T> + 'a) -> Self {
+        self.addresses.push(Box::new(address));
         self
     }
 }
 
-impl <T: Event> Address<T> for AddressBuilder<T>{
-    // takes ownership of the address
-    fn registers(self) -> Vec<Rc<dyn Register<T>>> {
-        self.registers
+impl <'a, T: Event> Address<T> for AddressBuilder<'a, T>{
+    fn receivers<'b>(&'b self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'b>>> {
+        self.addresses.iter().fold(vec![], |mut acc, addr| {
+            acc.append(&mut addr.receivers());
+            acc
+        })
     }
 }
