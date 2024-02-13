@@ -99,8 +99,6 @@ impl <T: Event, U: Receiver<T> + Asset> Address<T> for Rc<RefCell<U>> {
     }
 }
 
-
-
 // creates an address by creating a vector of addresses
 pub struct AddressBuilder<'a, T: Event> {
     addresses: Vec<Box<dyn Address<T> + 'a>>

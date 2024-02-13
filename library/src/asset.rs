@@ -70,13 +70,13 @@ impl <T: Object> UnsizedObject for T {}
 
 
 // map of instances, used for components and objects
-pub struct InstanceMap<T: ?Sized> {
+pub struct InstanceMap<T>  {
     pub map: Rc<RefCell<HashMap<Id, Rc<RefCell<T>>>>>,
     // id is the type id
     pub id: Id
 }
 
-impl <T: ?Sized> InstanceMap<T> {
+impl <T> InstanceMap<T> {
     pub fn new(type_id: Id) -> InstanceMap<T> {
         InstanceMap{map: Rc::new(RefCell::new(HashMap::new())), id: type_id}
     }
