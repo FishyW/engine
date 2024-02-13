@@ -48,7 +48,7 @@ export async function initTauri() {
 }
 
 type VoidFunc = () => void;
-const initOrder = ["start", "component", "scene", "receiver", "@"];
+const initOrder = ["start",  "scene", "receiver", "include", "@"];
 
 function callRustInits(wasm: {[key: string]: unknown}) {
     // order of registration is component first, then scene, the receiver

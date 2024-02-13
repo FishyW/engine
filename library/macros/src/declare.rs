@@ -24,7 +24,7 @@ Auto generated code sample
 */
 
 
-use std::{env, io, path::PathBuf};
+use std::{env, path::PathBuf};
 
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;

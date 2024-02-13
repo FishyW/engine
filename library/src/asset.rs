@@ -15,11 +15,9 @@ pub use component::*;
 pub trait Asset  {
     fn metadata(&self) -> InstanceMetadata;
 
-    // cleanup function when scene changes
-    fn clean(self);
-
     fn type_metadata(&self) -> TypeMetadata;
 }
+
 
 pub trait SizedAsset: Default + Asset {
     /// Note that this function may be slow
@@ -108,12 +106,10 @@ impl <T: Event, U: Receiver<T> + Object> Address<T>
         }
 }
 
-
-
 impl <T> Register for InstanceMap<T> {
     fn register_id(&self) -> Id {
         self.id
     }
 }
 
-
+struct Scene {}

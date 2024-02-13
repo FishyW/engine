@@ -1,6 +1,5 @@
 // transform (virtual) component
 
-
 use crate::prelude::*;
 
 #[derive(Default)]
@@ -9,7 +8,6 @@ pub struct Transform {
     pub x: i32,
     pub y: i32
 }
-
 
 lazy_static::lazy_static!(
     static ref __TRANSFORM_TYPE_ID: Id = Id::default();
@@ -22,8 +20,6 @@ thread_local!{
             std::cell::RefCell::new(ComponentMap::new(*__TRANSFORM_TYPE_ID));
 }
 
-
-
 impl Asset for Transform {
     fn metadata(&self) -> InstanceMetadata {
         InstanceMetadata {..self.metadata}
@@ -34,22 +30,16 @@ impl Asset for Transform {
             module_path: module_path!()}
     }
 
-    fn clean(self) {
-        __TRANSFORM_INCLUDE_MAP.with(|map| {
-            let map = map.borrow_mut();
-            let mut map = map.map.borrow_mut();
-            map.clear();
-        })
-    }
+  
 }
 
 
 impl Component for Transform {
-    fn register<T: Include<Transform> + 'static>(component_id: Id, object: InstanceMap<T>) {
+    fn register<T: Include<Transform> + 'static>(object_id: Id, object: InstanceMap<T>) {
         __TRANSFORM_INCLUDE_MAP.with(|map| {
             let map = map.borrow_mut();
             let mut map = map.map.borrow_mut();
-            map.insert(component_id, Box::new(object));
+            map.insert(object_id, Box::new(object));
         });
     }
 
@@ -62,5 +52,16 @@ impl Component for Transform {
 
         ComponentMap {map, id}
     }
-  
+}
+
+use crate::ClickEvent;
+impl Receiver<ClickEvent> for Transform {
+    fn receive(&mut self, _: ClickEvent) {
+        log::debug!("Clicked Transform!");
+    }
+}
+
+#[wasm_bindgen]
+pub fn __init_receiver_hashxxx2() {
+    ClickEvent::register(Transform::Address());
 }

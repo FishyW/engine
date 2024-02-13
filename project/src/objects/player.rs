@@ -1,6 +1,4 @@
 
-use std::borrow::Borrow;
-
 use crate::engine::prelude::*;
 
 
@@ -26,14 +24,6 @@ thread_local!{
 impl Asset for Player {
     fn metadata(&self) -> InstanceMetadata {
         InstanceMetadata {..self.metadata}
-    }
-    
-    fn clean(self) {
-        __PLAYER_INSTANCES_MAP.with(|map| {
-            let map = map.borrow_mut();
-            let mut map = map.map.borrow_mut();
-            map.clear();
-        })
     }
 
     #[allow(non_snake_case)]
@@ -69,15 +59,6 @@ impl Object for Player {
 
 use lib::core::component::Transform;
 
-// with(Transform) generated code
-// registers the object to the Transform Include Map
-#[wasm_bindgen]
-pub fn __init_component_hash() {
-    // Transform::register(Player::default())
-}
-
-
-
 
 // receiver generated code
 use lib::core::event::ClickEvent;
@@ -87,7 +68,26 @@ impl Receiver<ClickEvent> for Player {
     }
 }
 
+impl Include<Transform> for Player {
+    fn get<'a>(&'a mut self) -> &'a mut Transform {
+        &mut self.transform
+    }
+}
+
+// include register
 #[wasm_bindgen]
-pub fn __init_receiver_hash() {
+pub fn __init_include_hashxxx3() {
+    Transform::register::<Player>(*__PLAYER_TYPE_ID, Object::Address());
+}
+
+
+#[wasm_bindgen]
+pub fn __init_receiver_hashxxx() {
     ClickEvent::register(Player::Address());
+}
+
+#[wasm_bindgen]
+pub fn __init_ee() {
+    let event = ClickEvent{};
+    event.broadcast();
 }

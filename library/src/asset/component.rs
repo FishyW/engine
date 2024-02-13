@@ -10,7 +10,7 @@ pub trait Component: SizedAsset  {
 }
 
 pub trait Include<T: Component>: UnsizedObject {
-    fn get<'a>(&'a self) -> &'a mut T;
+    fn get<'a>(&'a mut self) -> &'a mut T;
 }
 
 // map of instances, used for components and objects
@@ -43,6 +43,7 @@ impl <T: Component, U: Include<T> + 'static> IncludeRegister<T> for InstanceMap<
 }
 
 
+
 impl <T: Event, U: Receiver<T> + Component> Receiver<T> for Rc<RefCell<dyn Include<U>>> {
     fn receive(&mut self, event: T) {
         self.borrow_mut()
@@ -53,18 +54,18 @@ impl <T: Event, U: Receiver<T> + Component> Receiver<T> for Rc<RefCell<dyn Inclu
 impl <T: Event, U: Component + Receiver<T>> Address<T> for 
     ComponentMap<U> {
     fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>> {
-        let mut receivers = vec![];
-        self.map.borrow().values().for_each(|register| {
-            let objects = register. registers();
-            objects.into_iter().for_each(|obj| {
-                receivers.push(
-                    Rc::new(RefCell::new(obj)) as Rc<RefCell<dyn Receiver<T>>>
-                )
+        
+        self.map.borrow().values().flat_map(|register| {
+            let objects = register.registers();
+            objects.into_iter().map(|obj| {
+                Rc::new(RefCell::new(obj)) as Rc<RefCell<dyn Receiver<T>>>
             })
-        });
-
-        receivers
+        }).collect()
     }
 }
 
-
+impl <T:  Component> Register for ComponentMap<T> {
+    fn register_id(&self) -> Id {
+        self.id
+    }
+}
