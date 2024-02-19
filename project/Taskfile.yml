@@ -4,10 +4,15 @@
 version: '3'
 
 tasks:
+  # build in dev mode, faster compilation time, with some cost to runtime performance
+  # dev mode also enables panic! stack trace as well as logging to console
   build:
     cmds:
-     - wasm-pack build --target web --out-dir "build/wasm"
+     - wasm-pack build --target web --out-dir "build/wasm" --dev
   
+  release:
+    cmds:
+      - wasm-pack build --target web --out-dir "build/wasm" 
 
   # runs cargo expand
   expand:

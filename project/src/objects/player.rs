@@ -1,19 +1,20 @@
-
 use crate::engine::prelude::*;
 
 
 // object generated code
-#[derive(Default)]
+#[derive(DefaultObject)]
 pub struct Player {
     metadata: InstanceMetadata,
+    #[component]
     transform: Transform
 }
 
 lazy_static::lazy_static!(
-    static ref __PLAYER_TYPE_ID: Id = Id::default();
+    static ref __PLAYER_TYPE_ID: TypeId = TypeId::default();
 );
 
 thread_local!{
+
     static __PLAYER_INSTANCES_MAP: 
          std::cell::RefCell<InstanceMap<Player>> = 
          std::cell::RefCell::new(InstanceMap::new(*__PLAYER_TYPE_ID))
@@ -35,12 +36,13 @@ impl Asset for Player {
 
 
 impl Object for Player {
-    fn register(asset: Self) -> std::rc::Rc<std::cell::RefCell<Self>> {
+    fn register(object: Self) -> std::rc::Rc<std::cell::RefCell<Self>> {
+
         __PLAYER_INSTANCES_MAP.with(|map| {
             let map = map.borrow_mut();
             let mut map = map.map.borrow_mut();
-            let id = asset.metadata().id;
-            let player = std::rc::Rc::new(std::cell::RefCell::new(asset));
+            let id = object.metadata().id;
+            let player = std::rc::Rc::new(std::cell::RefCell::new(object));
             map.insert(id, std::rc::Rc::clone(&player));
             player
         })
@@ -64,9 +66,16 @@ use lib::core::component::Transform;
 use lib::core::event::ClickEvent;
 impl Receiver<ClickEvent> for Player {
     fn receive(&mut self, _: ClickEvent) {
-        log::debug!("Clicked!");
+        // log::debug!("Player Received");
     }
 }
+
+#[wasm_bindgen]
+pub fn __init_receiver_hashxxx() {
+    ClickEvent::register(Player::Address());
+}
+
+// Include Generated Code, along with the transform: attribute
 
 impl Include<Transform> for Player {
     fn get<'a>(&'a mut self) -> &'a mut Transform {
@@ -74,20 +83,20 @@ impl Include<Transform> for Player {
     }
 }
 
-// include register
+
+
 #[wasm_bindgen]
 pub fn __init_include_hashxxx3() {
     Transform::register::<Player>(*__PLAYER_TYPE_ID, Object::Address());
 }
 
+// #[wasm_bindgen]
+// pub fn __init_test() {
+//     let player = Player::default();
+    
+//     log::debug!("Player: \n {:?}\n {:?}", player.metadata.id, player.type_metadata().id);
+//     log::debug!("Transform: \n {:?} \n {:?}", player.transform.metadata_component.parent_id, 
+//     player.transform.metadata_component.parent_typeid);
+// }
 
-#[wasm_bindgen]
-pub fn __init_receiver_hashxxx() {
-    ClickEvent::register(Player::Address());
-}
 
-#[wasm_bindgen]
-pub fn __init_ee() {
-    let event = ClickEvent{};
-    event.broadcast();
-}

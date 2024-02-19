@@ -19,6 +19,18 @@ pub trait Asset  {
 }
 
 
+pub struct TypeMetadata {
+    pub id: TypeId, 
+    pub module_path: &'static str
+}
+
+
+
+#[derive(Default)]
+pub struct InstanceMetadata {
+    pub id: Id
+}
+
 pub trait SizedAsset: Default + Asset {
     /// Note that this function may be slow
     /// since this function calls Self::default()
@@ -30,6 +42,11 @@ pub trait SizedAsset: Default + Asset {
     fn Metadata() -> TypeMetadata;
 }
 
+
+
+
+
+// implement fn Metadata() for all assets that implement Default
 impl <T: Asset + Default> SizedAsset for T {
     #[allow(non_snake_case)]
     fn Metadata() -> TypeMetadata {
@@ -37,21 +54,11 @@ impl <T: Asset + Default> SizedAsset for T {
     }
 }
 
-pub struct TypeMetadata {
-    pub id: Id, 
-    pub module_path: &'static str
-}
-
-
-#[derive(Default)]
-pub struct InstanceMetadata {
-    pub id: Id
-}
 
 // Object is Sized
 pub trait Object: SizedAsset {
     // used to register an object
-    fn register(asset: Self) -> std::rc::Rc<std::cell::RefCell<Self>>;
+    fn register(asset: Self) -> Rc<RefCell<Self>>;
 
     // to get all instances of an object use Address()
    #[allow(non_snake_case)]
@@ -69,11 +76,11 @@ impl <T: Object> UnsizedObject for T {}
 pub struct InstanceMap<T>  {
     pub map: Rc<RefCell<HashMap<Id, Rc<RefCell<T>>>>>,
     // id is the type id
-    pub id: Id
+    pub id: TypeId
 }
 
 impl <T> InstanceMap<T> {
-    pub fn new(type_id: Id) -> InstanceMap<T> {
+    pub fn new(type_id: TypeId) -> InstanceMap<T> {
         InstanceMap{map: Rc::new(RefCell::new(HashMap::new())), id: type_id}
     }
 }
@@ -82,9 +89,8 @@ impl <T> InstanceMap<T> {
 // Registers are any assets or asset types that can be registered
 pub trait Register {
     // get the id used to register
-    fn register_id(&self) -> Id;
+    fn register_id(&self) -> TypeId;
 }
-
 
 // Implement Address for an asset instance (Rc<RefCell<U>>)
 impl <T: Event, U: Receiver<T> + Asset> Address<T> for Rc<RefCell<U>> {
@@ -107,9 +113,8 @@ impl <T: Event, U: Receiver<T> + Object> Address<T>
 }
 
 impl <T> Register for InstanceMap<T> {
-    fn register_id(&self) -> Id {
+    fn register_id(&self) -> TypeId {
         self.id
     }
 }
 
-struct Scene {}

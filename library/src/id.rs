@@ -23,7 +23,6 @@ pub struct Id {
 }
 
 
-
 impl IdLike for Id {
     fn new(value: u64) -> Self {
         Id{value}
@@ -32,7 +31,6 @@ impl IdLike for Id {
     fn value(&self) -> u64 {
         self.value
     }
-    
 }
 
 impl Default for Id {
@@ -46,3 +44,15 @@ impl fmt::Debug for Id {
         write!(f, "{}", self.to_hex())
     }
 }
+
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Default)]
+pub struct TypeId {
+    value: Id
+}
+
+impl fmt::Debug for TypeId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value.to_hex())
+    }
+}
+

@@ -3,7 +3,8 @@
 	import InitModal from "$lib/components/InitModal.svelte";
 
 	import { pwrap } from '$lib/utils';
-	import { initTauri, initializeWasm, wasm } from '$lib/init';
+	import { initializeWasm, wasm } from '$lib/init';
+
 
 	// variables
 	let display = "";
@@ -11,12 +12,6 @@
 	let showInitModal = true;
 
 	let visible = false;
-
-	// tauriPath module, needs to be dynamically imported
-	// see https://github.com/tauri-apps/tauri/discussions/5271
-	onMount(async () => {
-		await initTauri();
-	});
 
 	// show the document body
 	function showBody() {
@@ -38,6 +33,7 @@
 	async function onSelectionEnd(event: CustomEvent<any>) {
 		projectPath = event.detail;
 
+
 		const [_, err] = await pwrap(initializeWasm(projectPath));
 
 		if (err != null) {
@@ -48,8 +44,11 @@
 
 		showInitModal = false;
 		
+
 		showBody();
 	}
+
+
 
 
 </script>
@@ -64,8 +63,9 @@
 </div>
 
 <svelte:body on:click={e => {
-	if (projectPath)
+	if (projectPath) {
 		wasm.eventReceive("click");
+	}
 }}/>
 
 <svelte:window on:keypress={e => {

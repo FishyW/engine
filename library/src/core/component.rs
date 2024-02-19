@@ -5,16 +5,18 @@ use crate::prelude::*;
 #[derive(Default)]
 pub struct Transform {
     metadata: InstanceMetadata,
+    pub metadata_component: ComponentMetadata,
     pub x: i32,
     pub y: i32
 }
 
 lazy_static::lazy_static!(
-    static ref __TRANSFORM_TYPE_ID: Id = Id::default();
+    static ref __TRANSFORM_TYPE_ID: TypeId = TypeId::default();
 );
 
 
 thread_local!{
+
     static __TRANSFORM_INCLUDE_MAP: 
          std::cell::RefCell<ComponentMap<Transform>> = 
             std::cell::RefCell::new(ComponentMap::new(*__TRANSFORM_TYPE_ID));
@@ -35,7 +37,16 @@ impl Asset for Transform {
 
 
 impl Component for Transform {
-    fn register<T: Include<Transform> + 'static>(object_id: Id, object: InstanceMap<T>) {
+
+    fn propagate<T: Event>(&self, event: T) {
+        event.propagate(self);
+    }
+
+    fn component_metadata(&self) -> ComponentMetadata {
+        self.metadata_component
+    }
+
+    fn register<T: Include<Transform> + 'static>(object_id: TypeId, object: InstanceMap<T>) {
         __TRANSFORM_INCLUDE_MAP.with(|map| {
             let map = map.borrow_mut();
             let mut map = map.map.borrow_mut();
@@ -56,8 +67,8 @@ impl Component for Transform {
 
 use crate::ClickEvent;
 impl Receiver<ClickEvent> for Transform {
-    fn receive(&mut self, _: ClickEvent) {
-        log::debug!("Clicked Transform!");
+    fn receive(&mut self, event: ClickEvent) {
+        log::debug!("Transform received!");
     }
 }
 
