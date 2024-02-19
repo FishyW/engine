@@ -1,9 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{error::Error, fs};
+use std::{error::Error, ffi::OsStr, fs, path::Path};
 use tauri::{
-    http::{status::StatusCode, Request, Response},
+    http::{status::StatusCode, Request, Response, Uri},
     AppHandle,
 };
 
@@ -27,37 +27,33 @@ fn http_error(e: &str) -> Result<Response> {
 }
 
 fn fetch_uri_handler(_app: &AppHandle, req: &Request) -> Result<Response> {
+    let uri = req.uri().parse::<Uri>().unwrap();
+
     // percent decode the string since convertFileSrc() -> percent encodes the path
-    let url = match urlencoding::decode(req.uri()) {
+    // uri.path()[1..] -> removes the leading "/"
+    let path = match urlencoding::decode(&uri.path()[1..]) {
         Ok(buf) => buf,
         Err(e) => return http_error(&e.to_string()),
     }
     .to_string();
 
-    // gets the path from -> http://localhost/<path>
-    // can't use url package since ../../ isn't a valid url
-    let path = url.split("/").skip(3).collect::<Vec<&str>>().join("/");
 
-    // remove the query parameters
-    let path = path.split("?").next().unwrap_or(&path);
+    let path = Path::new(&path);
 
     // reads the file and stores it into a binary vector
     let buf = match fs::read(&path) {
         Ok(buf) => buf,
         Err(_) => {
-            return http_error(&path);
+            return http_error(&format!("Invalid Path: {:?}", &path));
         }
     };
 
     // first line transforms ../../foo/bar.js -> bar.js
     // second line transforms bar.js -> js
-    let extension = path
-        .split('/')
-        .next_back()
-        .unwrap_or("text/plain")
-        .split('.')
-        .next_back()
-        .unwrap_or("text/plain");
+    let extension = path.extension()
+        .unwrap_or(OsStr::new(""))
+        .to_str()
+        .unwrap_or("");
 
     // gets the mime type, if the mime type isn't properly set for wasm.
     // browser gives a warning
