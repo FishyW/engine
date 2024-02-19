@@ -48,8 +48,6 @@ fn fetch_uri_handler(_app: &AppHandle, req: &Request) -> Result<Response> {
         }
     };
 
-    // first line transforms ../../foo/bar.js -> bar.js
-    // second line transforms bar.js -> js
     let extension = path.extension()
         .unwrap_or(OsStr::new(""))
         .to_str()
