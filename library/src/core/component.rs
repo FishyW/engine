@@ -69,8 +69,10 @@ use crate::ClickEvent;
 impl Receiver<ClickEvent> for Transform {
     fn receive(&mut self, event: ClickEvent) {
         log::debug!("Transform received!");
+        self.propagate(event);
     }
 }
+
 
 #[wasm_bindgen]
 pub fn __init_receiver_hashxxx2() {

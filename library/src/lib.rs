@@ -22,11 +22,15 @@ pub use macros;
 pub mod core;
 
 
+
 #[wasm_bindgen]
 pub fn event_receive(name: &str) {
     if name == "click" {
         ClickEvent.broadcast();
     }
+
+    // starts the event loop
+    router::start();
 }
 
 // library's init function call inside of project/lib.rs

@@ -44,6 +44,7 @@ impl <T: Component, U: Include<T> + Object> Parent<U> for T {
 }
 
 // map of instances, used for components and objects
+// a component instance keeps track of its parent from the component map
 pub struct ComponentMap<T: Component> {
     pub map: Rc<RefCell<HashMap<TypeId, Box<dyn IncludeRegister<T>>>>>,
     // id is the type id
@@ -63,7 +64,7 @@ pub trait IncludeRegister<T: Component>: Register {
 }
 
 
-
+// implement include register for instance maps
 impl <T: Component, U: Include<T> + 'static> IncludeRegister<T> for InstanceMap<U> {
     fn registers(&self) -> Vec<Rc<RefCell<dyn Include<T>>>> {
         self.map.borrow_mut().values().into_iter().map(|val| {
@@ -73,6 +74,7 @@ impl <T: Component, U: Include<T> + 'static> IncludeRegister<T> for InstanceMap<
 }
 
 
+// Implement receiver for Component Receivers
 impl <T: Event, U: Receiver<T> + Component> Receiver<T> for Rc<RefCell<dyn Include<U>>>
     {
     fn receive(&mut self, event: T) {
@@ -82,10 +84,10 @@ impl <T: Event, U: Receiver<T> + Component> Receiver<T> for Rc<RefCell<dyn Inclu
     }
 }
 
-
+// convert component map into addresses
 impl <T: Event, U: Component + Receiver<T>> Address<T> for 
     ComponentMap<U> {
-    fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>> {
+    fn receivers(&self) -> Vec<Rc<RefCell<dyn Receiver<T>>>> {
         
         self.map.borrow().values().flat_map(|register| {
             let objects = register.registers();

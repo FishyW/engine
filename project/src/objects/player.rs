@@ -70,6 +70,17 @@ impl Receiver<ClickEvent> for Player {
     }
 }
 
+impl PropReceiver<ClickEvent> for Player {
+    fn receive(&mut self, event: ClickEvent) {
+        log::debug!("Prop Received!");
+    }
+}
+
+#[wasm_bindgen]
+pub fn __init_receiver_hashxxx44() {
+    ClickEvent::prop_register(Transform::Address(), Player::Address());
+}
+
 #[wasm_bindgen]
 pub fn __init_receiver_hashxxx() {
     ClickEvent::register(Player::Address());
@@ -82,7 +93,6 @@ impl Include<Transform> for Player {
         &mut self.transform
     }
 }
-
 
 
 #[wasm_bindgen]

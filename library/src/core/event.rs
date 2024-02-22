@@ -1,12 +1,8 @@
 
-use crate::{prelude::*, router};
+use crate::prelude::*;
 
 #[derive(Clone)]
 pub struct ClickEvent;
-
-
-use ahash::HashMapExt;
-
 
 // makes __CLICK_EVENT_RECEIVERS local to the current thread
 // this prevents usage of Arc<> and Mutex<>
@@ -19,15 +15,22 @@ thread_local!{
     static __CLICK_EVENT_PROP_REGISTER: std::cell::RefCell<ahash::HashMap<TypeId, 
         Box<dyn EventPropRegister<ClickEvent>>>> = 
         std::cell::RefCell::new(ahash::HashMap::new());
+
+    static __CLICK_EVENT_HANDLERS: std::cell::RefCell<
+    std::rc::Rc<std::cell::RefCell<
+    std::collections::VecDeque<
+    (ClickEvent, Box<dyn Handler<ClickEvent>>) 
+    >>>> = Default::default()
 }
 
 impl Event for ClickEvent {
     
     // method is called when users use the prop receivers macro
-    fn prop_register(register: impl EventPropRegister<Self> + 'static) {
+    fn prop_register(component_register: impl Register,
+        register: impl EventPropRegister<Self> + 'static) {
         __CLICK_EVENT_PROP_REGISTER.with(|map| {
             let mut map = map.borrow_mut();
-            let id = register.register_id();
+            let id = component_register.register_id();
             map.insert(id, Box::new(register));
         })
     }
@@ -73,6 +76,24 @@ impl Event for ClickEvent {
         })
     }
 
+
+    // for the router code
+    fn register_handler(event: Self, item: impl Handler<Self>) {
+        __CLICK_EVENT_HANDLERS.with(|queue| {
+            let queue = queue.borrow_mut();
+            queue.borrow_mut()
+                .push_back((event, Box::new(item)));
+         })
+    }
+
+    fn into_handle() -> HandleQueue<Self> {
+        let queue = __CLICK_EVENT_HANDLERS.with(|queue| {
+            let queue = queue.borrow_mut();
+            std::rc::Rc::clone(&queue)
+        });
+        HandleQueue {queue}
+    }
 }
+
 
 

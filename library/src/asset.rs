@@ -12,7 +12,7 @@ pub use component::*;
 // like Asset but it can be stored dynamically
 // since Assets need to implement Default, which means that implementors
 // Assets cannot be Unsized
-pub trait Asset  {
+pub trait Asset: 'static {
     fn metadata(&self) -> InstanceMetadata;
 
     fn type_metadata(&self) -> TypeMetadata;
@@ -95,7 +95,7 @@ pub trait Register {
 // Implement Address for an asset instance (Rc<RefCell<U>>)
 impl <T: Event, U: Receiver<T> + Asset> Address<T> for Rc<RefCell<U>> {
     // takes ownership of the address
-    fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>> {
+    fn receivers(&self) -> Vec<Rc<RefCell<dyn Receiver<T> >>> {
         vec![Rc::clone(&self) as Rc<RefCell<dyn Receiver<T>>>]
     }
 }
@@ -103,7 +103,7 @@ impl <T: Event, U: Receiver<T> + Asset> Address<T> for Rc<RefCell<U>> {
 // implement Address for an instance map
 impl <T: Event, U: Receiver<T> + Object> Address<T> 
     for InstanceMap<U> {
-        fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>> {
+        fn receivers(&self) -> Vec<Rc<RefCell<dyn Receiver<T>>>> {
             // as keyword to cast between SmartPointer<A> to SmartPointer<dyn B>
             self.map.borrow().iter().map(|(_, instance)| {
                 Rc::clone(instance) as Rc<RefCell<dyn Receiver<T>>>
