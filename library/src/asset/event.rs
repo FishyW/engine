@@ -66,49 +66,52 @@ pub trait Event: Clone + 'static {
         register: impl EventPropRegister<Self> + 'static);
 
     // for the event router
-    fn register_handler(event: Self, item: impl Handler<Self>);
+    fn register_handler(event: Self, item: impl GenericReceiver<Self>);
 
-    fn into_handle() -> HandleQueue<Self>;
+    fn into_register() -> EventQueueRegister<Self>;
 }
 
 pub trait Receiver<T: Event> {
     fn receive(&mut self, event: T);
 }
 
-pub trait Handle {
-    fn handle(&self);
+
+pub trait GenericReceiver<T>: 'static {
+    fn receive(&mut self, asset: T);
 }
 
-pub trait Handler<T>: 'static {
-    fn handle(&mut self, asset: T);
+pub trait GenericEventQueueRegister {
+    fn call_receivers(&self);
 }
 
-pub struct HandleQueue<T: Event>  {
-    pub queue: Rc<RefCell<VecDeque<(T, Box<dyn Handler<T>>)>>>,
+pub struct EventQueueRegister<T: Event>  {
+    pub queue: Rc<RefCell<VecDeque<(T, Box<dyn GenericReceiver<T>>)>>>,
 }
 
-impl <T: Event> Handle for HandleQueue<T> {
-    fn handle(&self) {
-        let (event, mut handler) = {
+
+impl <T: Event> GenericEventQueueRegister for EventQueueRegister<T> {
+    fn call_receivers(&self) {
+        let (event, receiver) = {
             // this is put into its own block, so that
             // the mutable borrow to the queue can go out of scope
+            // before handler.handle() is called
             let mut queue = self.queue.borrow_mut();
             queue.pop_front()
                 .expect("No more items inside of the deque")
         };
         
-        handler.handle(event);
+        crate::router::call_receiver(event, receiver);
     }
 }
 
-impl <T: Event> Handler<T> for Rc<RefCell<dyn Receiver<T>>> {
-    fn handle(&mut self, event: T) {
+impl <T: Event> GenericReceiver<T> for Rc<RefCell<dyn Receiver<T>>> {
+    fn receive(&mut self, event: T) {
         self.borrow_mut().receive(event);
     }
 }
 
-impl <T: Event> Handler<T> for Rc<RefCell<dyn PropReceiver<T>>> {
-    fn handle(&mut self, event: T) {
+impl <T: Event> GenericReceiver<T> for Rc<RefCell<dyn PropReceiver<T>>> {
+    fn receive(&mut self, event: T) {
         self.borrow_mut().receive(event);
     }
 }

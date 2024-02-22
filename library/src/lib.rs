@@ -1,8 +1,3 @@
-use core::{component::Transform, event::ClickEvent};
-
-use prelude::{Component, Event};
-use wasm_bindgen::prelude::*;
-
 // where the Event Router lies
 pub mod router;
 
@@ -22,6 +17,9 @@ pub use macros;
 pub mod core;
 
 
+use crate::prelude::*;
+use core::event::ClickEvent;
+
 
 #[wasm_bindgen]
 pub fn event_receive(name: &str) {
@@ -35,6 +33,8 @@ pub fn event_receive(name: &str) {
 
 // library's init function call inside of project/lib.rs
 pub fn init() {
+    // the block labelled debug assertions will be removed
+    // when compiling in "release" mode 
     #[cfg(debug_assertions)]
     {
         wasm_logger::init(wasm_logger::Config::default());

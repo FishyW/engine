@@ -16,7 +16,7 @@ struct Router {
     // each handle has a handle() function 
     // events themselves are (the only) handles, but since events implements Clone
     // VecDeque<Box<dyn Event>> won't work
-    queue: VecDeque<Box<dyn Handle>>
+    queue: VecDeque<Box<dyn GenericEventQueueRegister>>
 }
 
 // Router is a static (singleton) variable
@@ -54,19 +54,23 @@ pub fn start() {
         let Some(handle) = handle else {
             break;
         };
-        handle.handle();
+        handle.call_receivers();
         
     }
-    
+}
+
+// calls the interceptors and event actions, then calls the receiver
+pub fn call_receiver<T: Event>(event: T, mut receiver: Box<dyn GenericReceiver<T>>) {
+    receiver.receive(event);
 }
 
 // given an address, call all receivers inside of that address
-fn register_handler<T: Event, U: Handler<T>>(event: T, receiver: U) {
+fn register_handler<T: Event, U: GenericReceiver<T>>(event: T, receiver: U) {
 
    T::register_handler(event, receiver);
    ROUTER.with(|router| {
         let mut router = router.borrow_mut();
-        router.queue.push_back(Box::new(T::into_handle()));
+        router.queue.push_back(Box::new(T::into_register()));
    });
 }
 

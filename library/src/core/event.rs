@@ -19,7 +19,7 @@ thread_local!{
     static __CLICK_EVENT_HANDLERS: std::cell::RefCell<
     std::rc::Rc<std::cell::RefCell<
     std::collections::VecDeque<
-    (ClickEvent, Box<dyn Handler<ClickEvent>>) 
+    (ClickEvent, Box<dyn GenericReceiver<ClickEvent>>) 
     >>>> = Default::default()
 }
 
@@ -78,7 +78,7 @@ impl Event for ClickEvent {
 
 
     // for the router code
-    fn register_handler(event: Self, item: impl Handler<Self>) {
+    fn register_handler(event: Self, item: impl GenericReceiver<Self>) {
         __CLICK_EVENT_HANDLERS.with(|queue| {
             let queue = queue.borrow_mut();
             queue.borrow_mut()
@@ -86,12 +86,12 @@ impl Event for ClickEvent {
          })
     }
 
-    fn into_handle() -> HandleQueue<Self> {
+    fn into_register() -> EventQueueRegister<Self> {
         let queue = __CLICK_EVENT_HANDLERS.with(|queue| {
             let queue = queue.borrow_mut();
             std::rc::Rc::clone(&queue)
         });
-        HandleQueue {queue}
+        EventQueueRegister {queue}
     }
 }
 

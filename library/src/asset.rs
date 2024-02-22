@@ -8,7 +8,6 @@ use crate::prelude::*;
 pub use event::*;
 pub use component::*;
 
-
 // like Asset but it can be stored dynamically
 // since Assets need to implement Default, which means that implementors
 // Assets cannot be Unsized
