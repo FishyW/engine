@@ -20,12 +20,15 @@ pub trait Component: SizedAsset  {
 }
 
 
-
-pub trait Include<T: Component>: UnsizedObject {
+pub trait IncludeUnsized<T: Component>: UnsizedObject {
     fn get<'a>(&'a mut self) -> &'a mut T;
 }
 
-
+pub trait Include<T: Component>: Object + IncludeUnsized<T> {
+    #[allow(non_snake_case)]
+    // prop addresses are used internally, don't use this
+    fn PropAddress() -> PropAddress<T, Self>;
+}
 
 // gets the parent of a component
 pub trait Parent<T: UnsizedObject> {
@@ -60,22 +63,32 @@ impl <T: Component> ComponentMap<T> {
 
 
 pub trait IncludeRegister<T: Component>: Register {
-    fn registers(&self) -> Vec<Rc<RefCell<dyn Include<T>>>>;
+    fn registers(&self) -> Vec<Rc<RefCell<dyn IncludeUnsized<T>>>>;
 }
 
 
 // implement include register for instance maps
 impl <T: Component, U: Include<T> + 'static> IncludeRegister<T> for InstanceMap<U> {
-    fn registers(&self) -> Vec<Rc<RefCell<dyn Include<T>>>> {
+    fn registers(&self) -> Vec<Rc<RefCell<dyn IncludeUnsized<T>>>> {
         self.map.borrow_mut().values().into_iter().map(|val| {
-            Rc::clone(val) as Rc<RefCell<dyn Include<T>>>
+            Rc::clone(val) as Rc<RefCell<dyn IncludeUnsized<T>>>
         }).collect()
     }
 }
 
 
+impl <U: Component> Asset for Rc<RefCell<dyn IncludeUnsized<U>>> {
+    fn metadata(&self) -> InstanceMetadata {
+        self.borrow().metadata()
+    }
+
+    fn type_metadata(&self) -> TypeMetadata {
+        self.borrow().type_metadata()
+    }
+}
+
 // Implement receiver for Component Receivers
-impl <T: Event, U: Receiver<T> + Component> Receiver<T> for Rc<RefCell<dyn Include<U>>>
+impl <T: Event, U: Receiver<T> + Component> Receiver<T> for Rc<RefCell<dyn IncludeUnsized<U>>>
     {
     fn receive(&mut self, event: T) {
         self.borrow_mut()

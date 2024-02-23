@@ -12,35 +12,35 @@ thread_local!{
         Box<dyn EventRegister<ClickEvent>>>> = 
         std::cell::RefCell::new(ahash::HashMap::new());
 
+    // stores a map of type id that maps to the component map
     static __CLICK_EVENT_PROP_REGISTER: std::cell::RefCell<ahash::HashMap<TypeId, 
         Box<dyn EventPropRegister<ClickEvent>>>> = 
         std::cell::RefCell::new(ahash::HashMap::new());
 
-    static __CLICK_EVENT_HANDLERS: std::cell::RefCell<
+    static __CLICK_EVENT_HANDLERS: 
     std::rc::Rc<std::cell::RefCell<
     std::collections::VecDeque<
-    (ClickEvent, Box<dyn GenericReceiver<ClickEvent>>) 
-    >>>> = Default::default()
+    (ClickEvent, std::rc::Rc<std::cell::RefCell<dyn Receiver<ClickEvent>>>) 
+    >>> = Default::default()
 }
 
 impl Event for ClickEvent {
     
+    // registers a propagation receiver
     // method is called when users use the prop receivers macro
-    fn prop_register(component_register: impl Register,
-        register: impl EventPropRegister<Self> + 'static) {
+    fn prop_register(register: impl EventPropRegister<Self> + 'static) {
         __CLICK_EVENT_PROP_REGISTER.with(|map| {
-            let mut map = map.borrow_mut();
-            let id = component_register.register_id();
-            map.insert(id, Box::new(register));
+            let id = register.register_id();
+            map.borrow_mut().insert(id, Box::new(register));
         })
     }
 
+    // registers a receiver
     // method is called when users use the receivers macro
     fn register(register: impl EventRegister<Self> + 'static) {
          __CLICK_EVENT_REGISTER.with(|map| {
-            let mut map = map.borrow_mut();
             let id = register.register_id();
-            map.insert(id, Box::new(register));
+            map.borrow_mut().insert(id, Box::new(register));
          })
     }
 
@@ -53,7 +53,7 @@ impl Event for ClickEvent {
 
     fn broadcast(self) 
         where Self:Sized {
-        __CLICK_EVENT_REGISTER.with(|map| {
+        __CLICK_EVENT_REGISTER.with(|mut map| {
             router::broadcast(self, &mut map.borrow_mut());
         })
     }
@@ -67,32 +67,25 @@ impl Event for ClickEvent {
         })
     }
 
-    // gets self instead of &self
-    // so the router copy of the event can be implicitly dropped as well
-    fn clear(self) {
-        __CLICK_EVENT_REGISTER.with(|map| {
-            map.borrow_mut()
-                .clear()
-        })
-    }
-
 
     // for the router code
-    fn register_handler(event: Self, item: impl GenericReceiver<Self>) {
+    fn register_handler(event: Self, item: std::rc::Rc<std::cell::RefCell<dyn Receiver<Self>>>) {
         __CLICK_EVENT_HANDLERS.with(|queue| {
-            let queue = queue.borrow_mut();
             queue.borrow_mut()
-                .push_back((event, Box::new(item)));
+                .push_back((event, item));
          })
     }
 
     fn into_register() -> EventQueueRegister<Self> {
         let queue = __CLICK_EVENT_HANDLERS.with(|queue| {
-            let queue = queue.borrow_mut();
             std::rc::Rc::clone(&queue)
         });
         EventQueueRegister {queue}
     }
+
+    // fn metadata() -> EventMetadata {
+        
+    // }
 }
 
 

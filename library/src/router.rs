@@ -60,12 +60,12 @@ pub fn start() {
 }
 
 // calls the interceptors and event actions, then calls the receiver
-pub fn call_receiver<T: Event>(event: T, mut receiver: Box<dyn GenericReceiver<T>>) {
-    receiver.receive(event);
+pub fn call_receiver<T: Event>(event: T, receiver: Rc<RefCell<dyn Receiver<T>>>) {
+    receiver.borrow_mut().receive(event);
 }
 
 // given an address, call all receivers inside of that address
-fn register_handler<T: Event, U: GenericReceiver<T>>(event: T, receiver: U) {
+fn register_handler<T: Event>(event: T, receiver: Rc<RefCell<dyn Receiver<T>>>) {
 
    T::register_handler(event, receiver);
    ROUTER.with(|router| {
@@ -95,7 +95,7 @@ pub fn propagate<T: Event>(event: T, component_typeid: TypeId, instance_id: Id,
             return;
         };
 
-        let receivers = register.props();
+        let receivers = register.receivers();
 
         // should never fail since the component's instance id should
         //  refer to an object that exists

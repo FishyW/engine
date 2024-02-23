@@ -15,9 +15,8 @@ lazy_static::lazy_static!(
 
 thread_local!{
 
-    static __PLAYER_INSTANCES_MAP: 
-         std::cell::RefCell<InstanceMap<Player>> = 
-         std::cell::RefCell::new(InstanceMap::new(*__PLAYER_TYPE_ID))
+    static __PLAYER_INSTANCES_MAP: InstanceMap<Player> = 
+         InstanceMap::new(*__PLAYER_TYPE_ID)
 }
 
 
@@ -39,7 +38,6 @@ impl Object for Player {
     fn register(object: Self) -> std::rc::Rc<std::cell::RefCell<Self>> {
 
         __PLAYER_INSTANCES_MAP.with(|map| {
-            let map = map.borrow_mut();
             let mut map = map.map.borrow_mut();
             let id = object.metadata().id;
             let player = std::rc::Rc::new(std::cell::RefCell::new(object));
@@ -50,12 +48,10 @@ impl Object for Player {
 
     #[allow(non_snake_case)]
     fn Address() -> InstanceMap<Self> {
-        let (map, id) = __PLAYER_INSTANCES_MAP.with(|map| {
-            let map = map.borrow();
-            (std::rc::Rc::clone(&map.map), map.id)
-        });
-
-        InstanceMap {map, id}
+         __PLAYER_INSTANCES_MAP.with(|map| {
+            // internally this calls Rc::clone()
+            map.clone()
+        })
     }
 }
 
@@ -64,13 +60,13 @@ use lib::core::component::Transform;
 
 // receiver generated code
 use lib::core::event::ClickEvent;
-impl Receiver<ClickEvent> for Player {
-    fn receive(&mut self, _: ClickEvent) {
-        // log::debug!("Player Received");
-    }
-}
+// impl Receiver<ClickEvent> for Player {
+//     fn receive(&mut self, _: ClickEvent) {
+//         // log::debug!("Player Received");
+//     }
+// }
 
-impl PropReceiver<ClickEvent> for Player {
+impl PropReceiver<ClickEvent, Transform> for Player {
     fn receive(&mut self, event: ClickEvent) {
         log::debug!("Prop Received!");
     }
@@ -78,20 +74,27 @@ impl PropReceiver<ClickEvent> for Player {
 
 #[wasm_bindgen]
 pub fn __init_receiver_hashxxx44() {
-    ClickEvent::prop_register(Transform::Address(), Player::Address());
+    ClickEvent::prop_register(<Player as Include<Transform>>::PropAddress());
 }
 
 #[wasm_bindgen]
 pub fn __init_receiver_hashxxx() {
-    ClickEvent::register(Player::Address());
+    // ClickEvent::register(Player::Address());
 }
 
 // Include Generated Code, along with the transform: attribute
-
-impl Include<Transform> for Player {
+impl IncludeUnsized<Transform> for Player {
     fn get<'a>(&'a mut self) -> &'a mut Transform {
         &mut self.transform
     }
+}
+
+impl Include<Transform> for Player {
+   fn PropAddress() -> PropAddress<Transform, Self> {
+       __PLAYER_INSTANCES_MAP.with(|map| {
+            PropAddress::new(map.clone())
+       })
+   }
 }
 
 

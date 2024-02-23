@@ -1,7 +1,7 @@
 mod event;
 mod component;
 
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, marker::PhantomData, rc::Rc};
 
 use ahash::{HashMap, HashMapExt};
 use crate::prelude::*;
@@ -17,19 +17,6 @@ pub trait Asset: 'static {
     fn type_metadata(&self) -> TypeMetadata;
 }
 
-
-pub struct TypeMetadata {
-    pub id: TypeId, 
-    pub module_path: &'static str
-}
-
-
-
-#[derive(Default)]
-pub struct InstanceMetadata {
-    pub id: Id
-}
-
 pub trait SizedAsset: Default + Asset {
     /// Note that this function may be slow
     /// since this function calls Self::default()
@@ -42,17 +29,16 @@ pub trait SizedAsset: Default + Asset {
 }
 
 
-
-
-
-// implement fn Metadata() for all assets that implement Default
-impl <T: Asset + Default> SizedAsset for T {
-    #[allow(non_snake_case)]
-    fn Metadata() -> TypeMetadata {
-        Self::default().type_metadata()
-    }
+pub struct PropAddress<T: Component, U: Include<T>> {
+    map: InstanceMap<U>,
+    phantom: PhantomData<T>
 }
 
+impl <T: Component, U: Include<T>> PropAddress<T, U> {
+    pub fn new(map: InstanceMap<U>) -> PropAddress<T, U>{
+        PropAddress {map, phantom: PhantomData::default()}
+    }
+}
 
 // Object is Sized
 pub trait Object: SizedAsset {
@@ -66,9 +52,33 @@ pub trait Object: SizedAsset {
        where Self:Sized;
 }
 
+pub trait Manager: SizedAsset {
+    #[allow(non_snake_case)]
+    fn Address() -> Rc<RefCell<Self>>;
+}
+
 pub trait UnsizedObject: Asset {}
 
 impl <T: Object> UnsizedObject for T {}
+
+
+// implement fn Metadata() for all assets that implement Default
+impl <T: Asset + Default> SizedAsset for T {
+    #[allow(non_snake_case)]
+    fn Metadata() -> TypeMetadata {
+        Self::default().type_metadata()
+    }
+}
+
+pub struct TypeMetadata {
+    pub id: TypeId, 
+    pub module_path: &'static str
+}
+
+#[derive(Default)]
+pub struct InstanceMetadata {
+    pub id: Id
+}
 
 
 // map of instances, used for components and objects
@@ -82,7 +92,16 @@ impl <T> InstanceMap<T> {
     pub fn new(type_id: TypeId) -> InstanceMap<T> {
         InstanceMap{map: Rc::new(RefCell::new(HashMap::new())), id: type_id}
     }
+    
 }
+
+impl <T> Clone for InstanceMap<T> {
+    fn clone(&self) -> Self {
+        InstanceMap{map: Rc::clone(&self.map), id: self.id}
+    }
+}
+
+
 
 
 // Registers are any assets or asset types that can be registered
@@ -114,6 +133,12 @@ impl <T: Event, U: Receiver<T> + Object> Address<T>
 impl <T> Register for InstanceMap<T> {
     fn register_id(&self) -> TypeId {
         self.id
+    }
+}
+
+impl <T: Manager> Register for Rc<RefCell<T>> {
+    fn register_id(&self) -> TypeId {
+        self.borrow().type_metadata().id
     }
 }
 

@@ -44,6 +44,10 @@ macro_rules! address {
 
 }
 
+pub struct EventMetadata {
+    target_metadata: InstanceMetadata
+}
+
 // 'static means event must be implemented for an owned type
 pub trait Event: Clone + 'static {
 
@@ -58,26 +62,21 @@ pub trait Event: Clone + 'static {
     // and registers each register to the event
     fn register(item: impl EventRegister<Self> + 'static);
 
-
-    // cleanup function when scene changes
-    fn clear(self);
-
-    fn prop_register(component_register: impl Register,
-        register: impl EventPropRegister<Self> + 'static);
+    fn prop_register(register: impl EventPropRegister<Self> + 'static);
 
     // for the event router
-    fn register_handler(event: Self, item: impl GenericReceiver<Self>);
+    fn register_handler(event: Self, item: Rc<RefCell<dyn Receiver<Self>>>);
 
     fn into_register() -> EventQueueRegister<Self>;
+
 }
 
-pub trait Receiver<T: Event> {
+pub trait Receiver<T: Event>: Asset {
     fn receive(&mut self, event: T);
 }
 
-
-pub trait GenericReceiver<T>: 'static {
-    fn receive(&mut self, asset: T);
+pub trait Interceptor<T: Event> {
+    fn intercept(&mut self, event: T) -> Option<T>;
 }
 
 pub trait GenericEventQueueRegister {
@@ -85,7 +84,7 @@ pub trait GenericEventQueueRegister {
 }
 
 pub struct EventQueueRegister<T: Event>  {
-    pub queue: Rc<RefCell<VecDeque<(T, Box<dyn GenericReceiver<T>>)>>>,
+    pub queue: Rc<RefCell<VecDeque<(T, Rc<RefCell<dyn Receiver<T>>>)>>>,
 }
 
 
@@ -104,20 +103,10 @@ impl <T: Event> GenericEventQueueRegister for EventQueueRegister<T> {
     }
 }
 
-impl <T: Event> GenericReceiver<T> for Rc<RefCell<dyn Receiver<T>>> {
-    fn receive(&mut self, event: T) {
-        self.borrow_mut().receive(event);
-    }
-}
 
-impl <T: Event> GenericReceiver<T> for Rc<RefCell<dyn PropReceiver<T>>> {
-    fn receive(&mut self, event: T) {
-        self.borrow_mut().receive(event);
-    }
-}
 
 // Propagation Event Receiver
-pub trait PropReceiver<T: Event> {
+pub trait PropReceiver<T: Event, U: Component>: Include<U> {
     fn receive(&mut self, event: T);
 }
 
@@ -194,18 +183,54 @@ impl <T: Event, U: Register + Address<T>> EventRegister<T> for U {}
 
 // similar to register except it returns a HashMap of <Id, Rc<RefCell<dyn PropReceiver<T>>>
 // Id is the instance Id and Prop are all objects that has a propagation receiver
-pub trait EventPropRegister<T: Event> {
-    fn props(& self) -> HashMap<Id, 
-        Rc<RefCell<dyn PropReceiver<T>>>>;
+pub trait EventPropRegister<T: Event>: Register {
+    fn receivers(&self) -> HashMap<Id, 
+        Rc<RefCell<dyn Receiver<T>>>>;
 }
 
 
-impl <T: Event, U: PropReceiver<T> + Object> EventPropRegister<T> for
-    InstanceMap<U> {
-        fn props(&self) -> HashMap<Id, 
-                Rc<RefCell<dyn PropReceiver<T>>>> {
-            self.map.borrow().iter().map(|(&id, value)| {
-                (id, Rc::clone(value) as Rc<RefCell<dyn PropReceiver<T>>>)
+struct PropReceiverInstance<T: Component, U: Include<T>>{
+    object: Rc<RefCell<U>>,
+    phantom: PhantomData<T>
+}
+
+impl <T: Component, U: Include<T>> Asset for PropReceiverInstance<T, U> {
+    fn metadata(&self) -> InstanceMetadata {
+        self.object.borrow().metadata()
+    }
+    fn type_metadata(&self) -> TypeMetadata {
+        self.object.borrow().type_metadata()
+    }
+}
+
+impl <T: Event, U: Component, V: PropReceiver<T, U>> Receiver<T> 
+    for PropReceiverInstance<U, V> {
+    fn receive(&mut self, event: T) {
+        self.object.borrow_mut().receive(event);
+    }
+}
+
+
+impl <T: Component, U: Include<T>> Register for PropAddress<T, U> {
+    fn register_id(&self) -> TypeId {
+        T::Address().id
+    }
+}
+
+impl <T: Event, U: Component, V: PropReceiver<T, U>> EventPropRegister<T> for
+    PropAddress<U, V> {
+        fn receivers(&self) -> HashMap<Id, 
+                Rc<RefCell<dyn Receiver<T>>>> {
+            self.map.map.borrow().iter().map(|(&id, object)| {
+                let object = Rc::clone(object);
+                let instance = 
+                    PropReceiverInstance{object, 
+                    phantom: PhantomData::default()};
+                
+                let instance = Rc::new(RefCell::new(instance)) 
+                    as Rc<RefCell<dyn Receiver<T>>>;
+
+                (id, instance)
             }).collect()
         }
 }

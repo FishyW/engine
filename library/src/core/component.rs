@@ -16,10 +16,8 @@ lazy_static::lazy_static!(
 
 
 thread_local!{
-
-    static __TRANSFORM_INCLUDE_MAP: 
-         std::cell::RefCell<ComponentMap<Transform>> = 
-            std::cell::RefCell::new(ComponentMap::new(*__TRANSFORM_TYPE_ID));
+    static __TRANSFORM_INCLUDE_MAP: ComponentMap<Transform> = 
+            ComponentMap::new(*__TRANSFORM_TYPE_ID);
 }
 
 impl Asset for Transform {
@@ -31,8 +29,6 @@ impl Asset for Transform {
         TypeMetadata {id: *__TRANSFORM_TYPE_ID, 
             module_path: module_path!()}
     }
-
-  
 }
 
 
@@ -48,7 +44,6 @@ impl Component for Transform {
 
     fn register<T: Include<Transform> + 'static>(object_id: TypeId, object: InstanceMap<T>) {
         __TRANSFORM_INCLUDE_MAP.with(|map| {
-            let map = map.borrow_mut();
             let mut map = map.map.borrow_mut();
             map.insert(object_id, Box::new(object));
         });
@@ -57,7 +52,6 @@ impl Component for Transform {
     #[allow(non_snake_case)]
     fn Address() -> ComponentMap<Self> {
         let (map, id) = __TRANSFORM_INCLUDE_MAP.with(|map| {
-            let map = map.borrow();
             (std::rc::Rc::clone(&map.map), map.id)
         });
 
