@@ -19,13 +19,24 @@ const ID_BUILDER: IdBuilder = IdBuilder::new(KEYS);
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Id {
-    value: u64
+    value: u64,
+    is_empty: bool
+}
+
+impl Id {
+    pub fn empty() -> Id {
+        Id {value: 0, is_empty: true}
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.is_empty
+    }
 }
 
 
 impl IdLike for Id {
     fn new(value: u64) -> Self {
-        Id{value}
+        Id{value, is_empty: false}
     }
 
     fn value(&self) -> u64 {
@@ -49,6 +60,18 @@ impl fmt::Debug for Id {
 pub struct TypeId {
     value: Id
 }
+
+impl TypeId {
+    pub fn empty() -> TypeId {
+        TypeId {value: Id::empty()}
+    }
+
+    pub fn is_empty(&self) -> bool {
+        Id::is_empty(&self.value)
+    }
+}
+
+
 
 impl fmt::Debug for TypeId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

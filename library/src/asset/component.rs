@@ -6,6 +6,7 @@ pub struct ComponentMetadata {
     pub parent_typeid: TypeId
 }
 
+
 pub trait Component: SizedAsset  {
     // register an object, this is called when implementing the With<> trait
     fn register<T: Include<Self>  + 'static>(component_id: TypeId, object: InstanceMap<T>);
@@ -16,7 +17,9 @@ pub trait Component: SizedAsset  {
 
     fn component_metadata(&self) -> ComponentMetadata;
 
-    fn propagate<T: Event>(&self, event: T);
+    fn propagate<T: Event, U: IntoEvent<T>>(&self, event: U) {
+        event.into_event().propagate(self);
+    }
 }
 
 
@@ -90,10 +93,10 @@ impl <U: Component> Asset for Rc<RefCell<dyn IncludeUnsized<U>>> {
 // Implement receiver for Component Receivers
 impl <T: Event, U: Receiver<T> + Component> Receiver<T> for Rc<RefCell<dyn IncludeUnsized<U>>>
     {
-    fn receive(&mut self, event: T) {
+    fn receive(&mut self, event: Incoming<T>) {
         self.borrow_mut()
             .get().receive(event.clone());
-
+        
     }
 }
 

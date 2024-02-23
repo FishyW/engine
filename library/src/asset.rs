@@ -15,6 +15,14 @@ pub trait Asset: 'static {
     fn metadata(&self) -> InstanceMetadata;
 
     fn type_metadata(&self) -> TypeMetadata;
+
+    // EventAsset is a wrapper type for the two metadata above
+    fn into_event_asset(&self) -> EventAsset {
+        EventAsset {
+            metadata: self.metadata(),
+            type_metadata: self.type_metadata()
+        }
+    }
 }
 
 pub trait SizedAsset: Default + Asset {
@@ -70,12 +78,13 @@ impl <T: Asset + Default> SizedAsset for T {
     }
 }
 
+#[derive(Clone)]
 pub struct TypeMetadata {
     pub id: TypeId, 
     pub module_path: &'static str
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct InstanceMetadata {
     pub id: Id
 }

@@ -34,10 +34,6 @@ impl Asset for Transform {
 
 impl Component for Transform {
 
-    fn propagate<T: Event>(&self, event: T) {
-        event.propagate(self);
-    }
-
     fn component_metadata(&self) -> ComponentMetadata {
         self.metadata_component
     }
@@ -61,7 +57,7 @@ impl Component for Transform {
 
 use crate::ClickEvent;
 impl Receiver<ClickEvent> for Transform {
-    fn receive(&mut self, event: ClickEvent) {
+    fn receive(&mut self, event: Incoming<ClickEvent>) {
         log::debug!("Transform received!");
         self.propagate(event);
     }

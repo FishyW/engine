@@ -37,6 +37,7 @@ pub trait IdLike: Hash + Clone + Copy + Eq + PartialEq + fmt::Debug {
     fn to_hex(&self) -> String {
         format!("{:x}", self.value())
     }
+
 }
 
 

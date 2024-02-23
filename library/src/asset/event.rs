@@ -1,5 +1,5 @@
 
-use std::collections::VecDeque;
+use std::{collections::VecDeque, ops::{Deref, DerefMut}};
 
 use crate::asset::*;
 
@@ -44,10 +44,6 @@ macro_rules! address {
 
 }
 
-pub struct EventMetadata {
-    target_metadata: InstanceMetadata
-}
-
 // 'static means event must be implemented for an owned type
 pub trait Event: Clone + 'static {
 
@@ -65,32 +61,99 @@ pub trait Event: Clone + 'static {
     fn prop_register(register: impl EventPropRegister<Self> + 'static);
 
     // for the event router
-    fn register_handler(event: Self, item: Rc<RefCell<dyn Receiver<Self>>>);
+    fn register_event(event: Self, source: EventAsset, item: Rc<RefCell<dyn Receiver<Self>>>);
 
     fn into_register() -> EventQueueRegister<Self>;
-
 }
 
+// incoming "smart pointer"
+#[derive(Clone)]
+pub struct Incoming<T: Event> {
+    pub target: EventAsset,
+    pub source: EventAsset,
+    event: T
+}
+
+impl <T: Event> Incoming<T> {
+    pub fn new(event: T,  source: EventAsset, target: EventAsset) -> Incoming<T> {
+        Incoming{target, source, event}
+    }
+}
+
+
+pub trait IntoEvent<T: Event> {
+    fn into_event(self) -> T;
+}
+
+impl <T: Event> IntoEvent<T> for Incoming<T> {
+    // takes an event out of the Incoming<T>
+    fn into_event(self) -> T {
+        self.event
+    }
+}
+
+impl <T: Event> Deref for Incoming<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        &self.event
+    }
+}
+
+impl <T: Event> DerefMut for Incoming<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.event
+    }
+}
+
+// impl <T: Event> Event for Incoming<T> {
+//     fn broadcast(self) {
+//         self.event.broadcast()
+//     }
+
+//     fn into_register() -> EventQueueRegister<T> {
+//         T::into_register()
+//     }
+// }
+
+
 pub trait Receiver<T: Event>: Asset {
-    fn receive(&mut self, event: T);
+    fn receive(&mut self, event: Incoming<T>);
 }
 
 pub trait Interceptor<T: Event> {
     fn intercept(&mut self, event: T) -> Option<T>;
 }
 
+
+#[derive(Clone)]
+pub struct EventAsset {
+    pub metadata: InstanceMetadata,
+    pub type_metadata: TypeMetadata,
+}
+
+impl Default for EventAsset {
+    fn default() -> Self {
+        EventAsset {
+            metadata: InstanceMetadata {id: Id::empty()},
+            type_metadata: TypeMetadata {id: TypeId::empty(), 
+                module_path: ""}
+        }
+    }
+}
+
+
+
 pub trait GenericEventQueueRegister {
     fn call_receivers(&self);
 }
 
 pub struct EventQueueRegister<T: Event>  {
-    pub queue: Rc<RefCell<VecDeque<(T, Rc<RefCell<dyn Receiver<T>>>)>>>,
+    pub queue: Rc<RefCell<VecDeque<(T, EventAsset, Rc<RefCell<dyn Receiver<T>>>)>>>,
 }
-
 
 impl <T: Event> GenericEventQueueRegister for EventQueueRegister<T> {
     fn call_receivers(&self) {
-        let (event, receiver) = {
+        let (event, source, receiver) = {
             // this is put into its own block, so that
             // the mutable borrow to the queue can go out of scope
             // before handler.handle() is called
@@ -99,15 +162,13 @@ impl <T: Event> GenericEventQueueRegister for EventQueueRegister<T> {
                 .expect("No more items inside of the deque")
         };
         
-        crate::router::call_receiver(event, receiver);
+        crate::router::call_receiver(event, source, receiver);
     }
 }
 
-
-
 // Propagation Event Receiver
 pub trait PropReceiver<T: Event, U: Component>: Include<U> {
-    fn receive(&mut self, event: T);
+    fn receive(&mut self, event: Incoming<T>);
 }
 
 
@@ -205,7 +266,7 @@ impl <T: Component, U: Include<T>> Asset for PropReceiverInstance<T, U> {
 
 impl <T: Event, U: Component, V: PropReceiver<T, U>> Receiver<T> 
     for PropReceiverInstance<U, V> {
-    fn receive(&mut self, event: T) {
+    fn receive(&mut self, event: Incoming<T>) {
         self.object.borrow_mut().receive(event);
     }
 }
