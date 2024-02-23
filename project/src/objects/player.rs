@@ -14,7 +14,6 @@ lazy_static::lazy_static!(
 );
 
 thread_local!{
-
     static __PLAYER_INSTANCES_MAP: InstanceMap<Player> = 
          InstanceMap::new(*__PLAYER_TYPE_ID)
 }
@@ -67,7 +66,7 @@ use lib::core::event::ClickEvent;
 // }
 
 impl PropReceiver<ClickEvent, Transform> for Player {
-    fn receive(&mut self, event: ClickEvent) {
+    fn receive(&mut self, event: Incoming<ClickEvent>) {
         log::debug!("Prop Received!");
     }
 }

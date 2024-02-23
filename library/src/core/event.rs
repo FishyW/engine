@@ -17,11 +17,7 @@ thread_local!{
         Box<dyn EventPropRegister<ClickEvent>>>> = 
         std::cell::RefCell::new(ahash::HashMap::new());
 
-    static __CLICK_EVENT_HANDLERS: 
-    std::rc::Rc<std::cell::RefCell<
-    std::collections::VecDeque<
-    (ClickEvent, EventAsset, std::rc::Rc<std::cell::RefCell<dyn Receiver<ClickEvent>>>) 
-    >>> = Default::default()
+    static __CLICK_EVENT_ROUTER_MAP: RouterMap<ClickEvent> = Default::default()
 }
 
 impl Event for ClickEvent {
@@ -53,7 +49,7 @@ impl Event for ClickEvent {
 
     fn broadcast(self) 
         where Self:Sized {
-        __CLICK_EVENT_REGISTER.with(|mut map| {
+        __CLICK_EVENT_REGISTER.with(|map| {
             router::broadcast(self, &mut map.borrow_mut());
         })
     }
@@ -69,20 +65,22 @@ impl Event for ClickEvent {
 
 
     // for the router code
-    fn register_event(event: Self, 
+    fn register_event(
+        id: Id,
+        event: Self, 
         source: EventAsset,
         recv: std::rc::Rc<std::cell::RefCell<dyn Receiver<Self>>>) {
-        __CLICK_EVENT_HANDLERS.with(|queue| {
-            queue.borrow_mut()
-                .push_back((event, source, recv));
+        __CLICK_EVENT_ROUTER_MAP.with(|map| {
+            let mut map = map.map.borrow_mut();
+            map.insert(id, (event, source, recv));
          })
     }
 
-    fn into_register() -> EventQueueRegister<Self> {
-        let queue = __CLICK_EVENT_HANDLERS.with(|queue| {
-            std::rc::Rc::clone(&queue)
+    fn into_register() -> RouterMap<Self> {
+        let map = __CLICK_EVENT_ROUTER_MAP.with(|map| {
+            std::rc::Rc::clone(&map.map)
         });
-        EventQueueRegister {queue}
+        RouterMap {map}
     }
 
 }

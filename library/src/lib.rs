@@ -4,6 +4,14 @@ pub mod router;
 // code for various assets -> Object, Component, Event, etc.
 mod asset;
 
+// some code samples of various assets,
+// shows the expanded form of each proc macro is
+// note that the samples have their init_() functions commented out, 
+// register them manually for testing
+mod samples {
+    pub mod manager;
+}
+
 // Id initialization
 mod id;
 

@@ -41,7 +41,7 @@ impl Manager for GameManager {
 }
 
 impl Receiver<ClickEvent> for GameManager {
-    fn receive(&mut self, event: ClickEvent) {
+    fn receive(&mut self, event: Incoming<ClickEvent>) {
         log::debug!("Manager received!");
     }
 }   

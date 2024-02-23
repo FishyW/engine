@@ -1,5 +1,5 @@
 
-use std::{cell::RefCell, collections::VecDeque, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 use ahash::HashMap;
 
@@ -10,11 +10,8 @@ type EventPropMap<T> = HashMap<TypeId, Box<dyn EventPropRegister<T>>>;
 
 #[derive(Default)]
 struct Router {
-    // the queue stores a queue of handles
-    // each handle has a handle() function 
-    // events themselves are (the only) handles, but since events implements Clone
-    // VecDeque<Box<dyn Event>> won't work
-    queue: VecDeque<Box<dyn GenericEventQueueRegister>>,
+    // the stack stores a list of events that will be sent
+    stack: Vec<(Id, Box<dyn RouterRegister>)>,
 
     current_handler: EventAsset
 }
@@ -30,7 +27,7 @@ const LOOP_MAX_ITERATIONS: u32 = 100000;
 // this is called when an event is received from JavaScript
 // the event loop executes all events via a DFS search through the event dependency graph
 pub fn start() {
-    let mut event_queue = VecDeque::new();
+    let mut event_stack = Vec::new();
     
     for i in 1..=LOOP_MAX_ITERATIONS {
         if i == LOOP_MAX_ITERATIONS {
@@ -38,23 +35,27 @@ pub fn start() {
             Are you not in an infinite loop?");
         }
 
-        // populate the event queue
+        // populate the event stack
         ROUTER.with(|router| {
             let mut router = router.borrow_mut();
-            let queue = std::mem::take(&mut router.queue);
-            event_queue.extend(queue);
+            let mut stack = std::mem::take(&mut router.stack);
+            loop {
+                let Some(value) = stack.pop() else {
+                    break;
+                };
+                event_stack.push(value);
+            }
         });
 
-
-        let handle = event_queue.pop_front();
+     
+        let receiver = event_stack.pop();
 
         // if no more events left inside of the event queue 
         // the event loop is over
-        let Some(handle) = handle else {
+        let Some((id, receiver)) = receiver else {
             break;
         };
-        handle.call_receivers();
-        
+        receiver.call_receivers(id);
     }
 }
 
@@ -62,10 +63,12 @@ pub fn start() {
 pub fn call_receiver<T: Event>(event: T, source: EventAsset, 
         receiver: Rc<RefCell<dyn Receiver<T>>>) {
 
-    let receiver = receiver.borrow_mut();
-    Incoming::new(event, source, receiver.into_event_asset());
+    let mut receiver = receiver.borrow_mut();
+    
+    let event = Incoming::new(
+            event, source, receiver.into_event_asset());
 
-    // receiver.receive(event);
+    receiver.receive(event);
 }
 
 // register the event into the event queue
@@ -74,10 +77,11 @@ fn register_event<T: Event>(event: T, receiver: Rc<RefCell<dyn Receiver<T>>>) {
         router.borrow().current_handler.clone()
     });
 
-    T::register_event(event, source, receiver);
+    let id = Id::default();
+    T::register_event(id, event, source, receiver);
     ROUTER.with(|router| {
             let mut router = router.borrow_mut();
-            router.queue.push_back(Box::new(T::into_register()));
+            router.stack.push((id, Box::new(T::into_register())));
     });
 }
 
@@ -113,7 +117,6 @@ pub fn propagate<T: Event>(event: T, component_typeid: TypeId, instance_id: Id,
 
 // called by the event system
 pub fn broadcast<T: Event>(event: T, map: &mut EventMap<T>) {
-
     map.retain(|_, register| {
         register.receivers().into_iter().for_each(|recv| {
             register_event(event.clone(), recv);

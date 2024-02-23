@@ -1,5 +1,5 @@
 
-use std::{collections::VecDeque, ops::{Deref, DerefMut}};
+use std::ops::{Deref, DerefMut};
 
 use crate::asset::*;
 
@@ -61,9 +61,10 @@ pub trait Event: Clone + 'static {
     fn prop_register(register: impl EventPropRegister<Self> + 'static);
 
     // for the event router
-    fn register_event(event: Self, source: EventAsset, item: Rc<RefCell<dyn Receiver<Self>>>);
+    fn register_event(id: Id,
+        event: Self, source: EventAsset, item: Rc<RefCell<dyn Receiver<Self>>>);
 
-    fn into_register() -> EventQueueRegister<Self>;
+    fn into_register() -> RouterMap<Self>;
 }
 
 // incoming "smart pointer"
@@ -92,6 +93,12 @@ impl <T: Event> IntoEvent<T> for Incoming<T> {
     }
 }
 
+impl <T: Event> IntoEvent<T> for T {
+    fn into_event(self) -> T {
+        self
+    }
+}
+
 impl <T: Event> Deref for Incoming<T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
@@ -104,17 +111,6 @@ impl <T: Event> DerefMut for Incoming<T> {
         &mut self.event
     }
 }
-
-// impl <T: Event> Event for Incoming<T> {
-//     fn broadcast(self) {
-//         self.event.broadcast()
-//     }
-
-//     fn into_register() -> EventQueueRegister<T> {
-//         T::into_register()
-//     }
-// }
-
 
 pub trait Receiver<T: Event>: Asset {
     fn receive(&mut self, event: Incoming<T>);
@@ -131,6 +127,12 @@ pub struct EventAsset {
     pub type_metadata: TypeMetadata,
 }
 
+impl std::fmt::Debug for EventAsset {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.type_metadata.module_path)
+    }
+}
+
 impl Default for EventAsset {
     fn default() -> Self {
         EventAsset {
@@ -141,25 +143,29 @@ impl Default for EventAsset {
     }
 }
 
-
-
-pub trait GenericEventQueueRegister {
-    fn call_receivers(&self);
+pub trait RouterRegister {
+    fn call_receivers(&self, event_id: Id);
 }
 
-pub struct EventQueueRegister<T: Event>  {
-    pub queue: Rc<RefCell<VecDeque<(T, EventAsset, Rc<RefCell<dyn Receiver<T>>>)>>>,
+pub struct RouterMap<T: Event>  {
+    pub map: Rc<RefCell<HashMap<Id, (T, EventAsset, Rc<RefCell<dyn Receiver<T>>>)>>>,
 }
 
-impl <T: Event> GenericEventQueueRegister for EventQueueRegister<T> {
-    fn call_receivers(&self) {
+impl <T: Event> Default for RouterMap<T> {
+    fn default() -> Self {
+        RouterMap {map: Rc::new(RefCell::new(HashMap::new()))}
+    }
+}
+
+impl <T: Event> RouterRegister for RouterMap<T> {
+    fn call_receivers(&self, event_id: Id) {
         let (event, source, receiver) = {
             // this is put into its own block, so that
             // the mutable borrow to the queue can go out of scope
             // before handler.handle() is called
-            let mut queue = self.queue.borrow_mut();
-            queue.pop_front()
-                .expect("No more items inside of the deque")
+            let mut map = self.map.borrow_mut();
+            map.remove(&event_id)
+                .expect("Id does not exist in the router map!")
         };
         
         crate::router::call_receiver(event, source, receiver);
@@ -181,37 +187,6 @@ pub trait Address<T: Event>: 'static {
 }
 
 
-// AddressBuilderId in case the only thing known about the address
-// is the instance id of the object
-// this is an internal API and it should never be used by the users
-// struct AddressBuilderId<T: Asset> {
-//     ids: Vec<Id>,
-//     phantom: PhantomData<T>
-// }
-
-// impl <T: Asset> AddressBuilderId<T> {
-
-//        // enter the type id
-//     fn id<U: Asset>() -> AddressBuilderId<U> {
-//         AddressBuilderId {ids: vec![], phantom: PhantomData}
-//     }
-//     fn add(mut self, id: Id) -> Self {
-//         self.ids.push(id);
-//         self
-//     }
-// }
-
-// impl <T: Event, U: Object + Receiver<T>> Address<T> for AddressBuilderId<U>{
-//     fn receivers<'a>(&'a self) -> Vec<Rc<RefCell<dyn Receiver<T> + 'a>>> {
-//        let map = U::Address();
-//        let map = map.map.borrow_mut();
-//        self.ids.iter().map(|id| {
-//             Rc::clone(map.get(&id).expect("Id not found!"))
-//                 as Rc<RefCell<dyn Receiver<T>>>
-//        }).collect()
-//     }
-// }
-
 // creates an address by supplying a vector of addresses
 pub struct AddressBuilder<T: Event> {
     addresses: Vec<Box<dyn Address<T>>>
@@ -228,7 +203,7 @@ impl < T: Event> AddressBuilder< T> {
     }
 }
 
-impl < T: Event> Address<T> for AddressBuilder<T>{
+impl <T: Event> Address<T> for AddressBuilder<T>{
     fn receivers(&self) -> Vec<Rc<RefCell<dyn Receiver<T>>>> {
         self.addresses.iter().fold(vec![], |mut acc, addr| {
             acc.append(&mut addr.receivers());

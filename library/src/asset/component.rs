@@ -82,11 +82,11 @@ impl <T: Component, U: Include<T> + 'static> IncludeRegister<T> for InstanceMap<
 
 impl <U: Component> Asset for Rc<RefCell<dyn IncludeUnsized<U>>> {
     fn metadata(&self) -> InstanceMetadata {
-        self.borrow().metadata()
+        self.borrow_mut().get().metadata()
     }
 
     fn type_metadata(&self) -> TypeMetadata {
-        self.borrow().type_metadata()
+        self.borrow_mut().get().type_metadata()
     }
 }
 
