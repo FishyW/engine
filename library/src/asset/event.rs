@@ -136,9 +136,8 @@ impl std::fmt::Debug for EventAsset {
 impl Default for EventAsset {
     fn default() -> Self {
         EventAsset {
-            metadata: InstanceMetadata {id: Id::empty()},
-            type_metadata: TypeMetadata {id: TypeId::empty(), 
-                module_path: ""}
+            metadata: InstanceMetadata::empty(),
+            type_metadata: TypeMetadata::empty()
         }
     }
 }

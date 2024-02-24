@@ -81,7 +81,14 @@ impl <T: Asset + Default> SizedAsset for T {
 #[derive(Clone)]
 pub struct TypeMetadata {
     pub id: TypeId, 
-    pub module_path: &'static str
+    pub module_path: &'static str,
+    pub type_name: &'static str
+}
+
+impl TypeMetadata {
+    pub fn empty() -> Self {
+        TypeMetadata{id: TypeId::empty(), module_path: "", type_name: ""}
+    }
 }
 
 #[derive(Default, Clone)]
@@ -89,6 +96,11 @@ pub struct InstanceMetadata {
     pub id: Id
 }
 
+impl InstanceMetadata {
+    pub fn empty() -> Self {
+        InstanceMetadata{id: Id::empty()}
+    }
+}
 
 // map of instances, used for components and objects
 pub struct InstanceMap<T>  {

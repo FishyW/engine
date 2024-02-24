@@ -1,6 +1,7 @@
 
 use crate::{core::event::ClickEvent, prelude::*};
 
+// #[asset(manager)]
 #[derive(Default)]
 pub struct SampleManager {
     metadata: InstanceMetadata
@@ -19,7 +20,8 @@ impl Asset for SampleManager {
     #[allow(non_snake_case)]
     fn type_metadata(&self) -> TypeMetadata {
         TypeMetadata {id: *__GAME_MANAGER_TYPE_ID, 
-            module_path: module_path!()}
+            module_path: module_path!(),
+            type_name: "SampleManager"}
     }
 }
 

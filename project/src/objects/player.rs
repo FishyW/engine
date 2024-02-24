@@ -31,7 +31,8 @@ impl Asset for Player {
     #[allow(non_snake_case)]
     fn type_metadata(&self) -> TypeMetadata {
         TypeMetadata {id: *__PLAYER_TYPE_ID, 
-            module_path: module_path!()}
+            module_path: module_path!(),
+            type_name: "Player"}
     }
 }
 
@@ -98,8 +99,12 @@ impl IncludeUnsized<Transform> for Player {
         std::mem::take(&mut self.transform)
     }
 
-    fn get<'a>(&'a mut self) -> &'a mut Transform {
+    fn retrieve_mut<'a>(&'a mut self) -> &'a mut Transform {
         &mut self.transform
+    }
+
+    fn retrieve<'a>(&'a self) -> &'a Transform {
+        &self.transform
     }
 
     fn put(&mut self, component: Transform) {

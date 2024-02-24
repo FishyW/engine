@@ -29,7 +29,8 @@ impl Asset for Transform {
 
     fn type_metadata(&self) -> TypeMetadata {
         TypeMetadata {id: *__TRANSFORM_TYPE_ID, 
-            module_path: module_path!()}
+            module_path: module_path!(),
+            type_name: "Transform"}
     }
 }
 
@@ -73,12 +74,27 @@ impl Transform {
 }
 
 
-pub trait TransformDependency: // dependencies are placed here
+pub trait TransformDependency: IncludeUnsized<Transform> // dependencies are placed here
 {}
 
-impl <T: Object > TransformDependency 
+impl <T: Object + IncludeUnsized<Transform> > TransformDependency 
     for T {}
 
+
+// allows turbofish syntax
+impl GetComponent<dyn TransformDependency> for dyn TransformDependency {
+    fn get_mut<T: Component>(&mut self) -> &mut T
+        where dyn TransformDependency: IncludeUnsized<T> {
+        <dyn TransformDependency as IncludeUnsized<T>>
+            ::retrieve_mut(self)
+    }
+
+    fn get<T: Component>(&self) -> &T
+            where dyn TransformDependency: IncludeUnsized<T> {
+        <dyn TransformDependency as IncludeUnsized<T>>
+            ::retrieve(self)
+    }
+}
 
 struct TransformParent {
     object: Option<std::rc::Rc<std::cell::RefCell<dyn TransformDependency>>>,
@@ -109,27 +125,20 @@ impl Default for TransformParent {
     fn default() -> Self {
         TransformParent { 
             object: None,
-            metadata: InstanceMetadata{id: Id::empty()},
-            type_metadata: TypeMetadata {id: TypeId::empty(), module_path: ""}
+            metadata: InstanceMetadata::empty(),
+            type_metadata: TypeMetadata::empty()
         }
     }
 }
 
-// allows turbofish notation
-// this code is added in if there is more than 1 component dependency
-// impl GetComponent<dyn TransformDependency> for std::cell::RefMut<'_, dyn TransformDependency> {
-//     fn get<T: Component>(&mut self) -> &mut T 
-//         where (dyn TransformDependency): IncludeUnsized<T>{
-//         <dyn TransformDependency as IncludeUnsized<T>>
-//             ::get(std::ops::DerefMut::deref_mut(self))
-//     }
-// }
+
 
 // receiver code
 use crate::ClickEvent;
 impl Receiver<ClickEvent> for Transform {
     fn receive(&mut self, event: Incoming<ClickEvent>) {
         log::debug!("Transform received!");
+        
         self.propagate(event);
     }
 }

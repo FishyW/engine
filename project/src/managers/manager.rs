@@ -20,7 +20,8 @@ impl Asset for GameManager {
     #[allow(non_snake_case)]
     fn type_metadata(&self) -> TypeMetadata {
         TypeMetadata {id: *__GAME_MANAGER_TYPE_ID, 
-            module_path: module_path!()}
+            module_path: module_path!(),
+            type_name: "GameManager"}
     }
 }
 

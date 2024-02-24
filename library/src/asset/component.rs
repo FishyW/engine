@@ -24,7 +24,9 @@ pub trait IncludeUnsized<T: Component>: UnsizedObject {
     // takes a component out of its parent
     fn take(&mut self) -> T;
 
-    fn get<'a>(&'a mut self) -> &'a mut T;
+    fn retrieve_mut<'a>(&'a mut self) -> &'a mut T;
+
+    fn retrieve<'a>(&'a self) -> &'a T;
 
     // puts a component back
     fn put(&mut self, component: T);
@@ -32,7 +34,10 @@ pub trait IncludeUnsized<T: Component>: UnsizedObject {
 }
 
 pub trait GetComponent<U: ?Sized> {
-    fn get<T: Component>(&mut self) -> &mut T
+    fn get_mut<T: Component>(&mut self) -> &mut T
+        where U: IncludeUnsized<T>;
+
+    fn get<T: Component>(&self) -> &T
         where U: IncludeUnsized<T>;
 }
 
@@ -79,11 +84,11 @@ impl <T: Component, U: Include<T> + 'static> IncludeRegister<T> for InstanceMap<
 
 impl <U: Component> Asset for Rc<RefCell<dyn IncludeUnsized<U>>> {
     fn metadata(&self) -> InstanceMetadata {
-        self.borrow_mut().get().metadata()
+        self.borrow_mut().retrieve_mut().metadata()
     }
 
     fn type_metadata(&self) -> TypeMetadata {
-        self.borrow_mut().get().type_metadata()
+        self.borrow_mut().retrieve_mut().type_metadata()
     }
 }
 
