@@ -1,9 +1,4 @@
 use proc_macro::TokenStream;
-use proc_macro2::Span;
-use quote::format_ident;
-use syn::{parse_macro_input, Data, DataStruct, DeriveInput, Ident, Type};
-
-use crate::rules::ident;
 
 mod declare;
 mod rules;
@@ -107,9 +102,9 @@ pub fn interceptor(attr: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 
-fn uppercase_ident(ident: &Ident) -> Ident {
-    ident!(&ident.to_string().to_uppercase())
-}
+// fn uppercase_ident(ident: &Ident) -> Ident {
+//     ident!(&ident.to_string().to_uppercase())
+// }
 
 // fields -> (attribute name, attribute type, is component?)
 // fn generate_object_derive(name: Ident, fields: Vec<(Ident, Type, bool)>) -> TokenStream {

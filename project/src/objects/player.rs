@@ -1,7 +1,5 @@
 use crate::engine::prelude::*;
 
-
-
 // object generated code
 // #[derive(DefaultObject)]
 #[derive(Default)]
