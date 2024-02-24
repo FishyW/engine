@@ -51,7 +51,7 @@ impl <T: Component, U: Include<T>> PropAddress<T, U> {
 // Object is Sized
 pub trait Object: SizedAsset {
     // used to register an object
-    fn register(asset: Self) -> Rc<RefCell<Self>>;
+    fn register(asset: Self);
 
     // to get all instances of an object use Address()
    #[allow(non_snake_case)]

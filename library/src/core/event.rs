@@ -58,7 +58,7 @@ impl Event for ClickEvent {
         __CLICK_EVENT_PROP_REGISTER.with(|map| {
             router::propagate(self, 
                 component.type_metadata().id,
-                component.component_metadata().parent_id,
+                component.parent().metadata().id,
                 &mut map.borrow_mut());
         })
     }

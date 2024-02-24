@@ -1,13 +1,16 @@
 use crate::engine::prelude::*;
 
 
+
 // object generated code
-#[derive(DefaultObject)]
+// #[derive(DefaultObject)]
+#[derive(Default)]
 pub struct Player {
     metadata: InstanceMetadata,
-    #[component]
+    // #[component]
     transform: Transform
 }
+
 
 lazy_static::lazy_static!(
     static ref __PLAYER_TYPE_ID: TypeId = TypeId::default();
@@ -34,15 +37,23 @@ impl Asset for Player {
 
 
 impl Object for Player {
-    fn register(object: Self) -> std::rc::Rc<std::cell::RefCell<Self>> {
+    fn register(object: Self)  {
 
-        __PLAYER_INSTANCES_MAP.with(|map| {
+        let object_ref = __PLAYER_INSTANCES_MAP.with(|map| {
             let mut map = map.map.borrow_mut();
             let id = object.metadata().id;
-            let player = std::rc::Rc::new(std::cell::RefCell::new(object));
-            map.insert(id, std::rc::Rc::clone(&player));
-            player
-        })
+            let object = std::rc::Rc::new(std::cell::RefCell::new(object));
+            map.insert(id, std::rc::Rc::clone(&object));
+            object
+        });
+
+        // generated code from the include attributes
+        // sets the parent of each component
+        let mut object = object_ref.borrow_mut();
+        object.transform = Transform::new(std::rc::Rc::clone(&object_ref),
+            object.metadata.clone(), object.type_metadata());
+
+        
     }
 
     #[allow(non_snake_case)]
@@ -83,9 +94,18 @@ pub fn __init_receiver_hashxxx() {
 
 // Include Generated Code, along with the transform: attribute
 impl IncludeUnsized<Transform> for Player {
+    fn take(&mut self) -> Transform {
+        std::mem::take(&mut self.transform)
+    }
+
     fn get<'a>(&'a mut self) -> &'a mut Transform {
         &mut self.transform
     }
+
+    fn put(&mut self, component: Transform) {
+        self.transform = component
+    }
+    
 }
 
 impl Include<Transform> for Player {
@@ -101,14 +121,5 @@ impl Include<Transform> for Player {
 pub fn __init_include_hashxxx3() {
     Transform::register::<Player>(*__PLAYER_TYPE_ID, Object::Address());
 }
-
-// #[wasm_bindgen]
-// pub fn __init_test() {
-//     let player = Player::default();
-    
-//     log::debug!("Player: \n {:?}\n {:?}", player.metadata.id, player.type_metadata().id);
-//     log::debug!("Transform: \n {:?} \n {:?}", player.transform.metadata_component.parent_id, 
-//     player.transform.metadata_component.parent_typeid);
-// }
 
 

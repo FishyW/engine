@@ -111,90 +111,102 @@ fn uppercase_ident(ident: &Ident) -> Ident {
     ident!(&ident.to_string().to_uppercase())
 }
 
-fn generate_object_derive(name: Ident, fields: Vec<(Ident, Type, bool)>) -> TokenStream {
-    let type_id = format_ident!("__{}_TYPE_ID", uppercase_ident(&name));
-    let field_names = fields.iter().map(|field| &field.0).collect::<Vec<_>>();
+// fields -> (attribute name, attribute type, is component?)
+// fn generate_object_derive(name: Ident, fields: Vec<(Ident, Type, bool)>) -> TokenStream {
+//     let type_id = format_ident!("__{}_TYPE_ID", uppercase_ident(&name));
+//     let field_names = fields.iter().map(|field| &field.0).collect::<Vec<_>>();
     
-    let field_components = fields.iter()
-        .filter_map(|field| if field.2 {Some(&field.0)} else {None})
-        .collect::<Vec<_>>();
     
-    let default_initializations = fields.iter().map(|field| {
-        let name = &field.0;
-        let field_type = &field.1;
-        quote::quote!(
-            let mut #name = #field_type::default();
-        )
-    }).collect::<Vec<_>>();
+//     // let transform = Transform::default()
+//     let default_initializations = fields.iter().map(|field| {
+//         let name = &field.0;
+//         let field_type = &field.1;
+//         quote::quote!(
+//             let mut #name = #field_type::default();
+//         )
+//     }).collect::<Vec<_>>();
+
+//     // let transform = Transform::new()
+//     let component_initializations = fields.iter().filter_map(|field| {
+//         if field.2 {
+//             return None;
+//         }
+
+//         let name = &field.0;
+//         let field_type = &field.1;
+//         Some(quote::quote!(
+//             let mut #name = #field_type::new(object_ref);
+//         ))
+//     }).collect::<Vec<_>>();
     
-    quote::quote!(
-        impl Default for #name {
-            fn default() -> Self {
-                let metadata = InstanceMetadata::default();
-                let metadata_component = ComponentMetadata {
-                    parent_id: metadata.id, parent_typeid: *#type_id
-                };
+//     quote::quote!(
+//         impl Default for #name {
+//             fn default() -> Self {
+//                 let metadata = InstanceMetadata::default();
         
-                #(
-                    #default_initializations
-                )*
-                #(
-                    #field_components.metadata_component = metadata_component;
-                )*
+//                 #(
+//                     #default_initializations
+//                 )*
                     
-                #name {
-                    metadata,
-                    #(
-                        #field_names
-                    ),*
-                }
-            }
-        } 
-    ).into()
-}
+//                 let object = #name {
+//                     metadata,
+//                     #(
+//                         #field_names
+//                     ),*
+//                 };
 
-fn parse_object_derive(input: DeriveInput) -> TokenStream {
-    let DeriveInput{
-        ident: name,
-        data: Data::Struct(DataStruct {
-            fields, ..
-        }), 
-        ..} = input else {
-            return 
-            syn::Error::new(Span::call_site(), "Failed to parse struct!")
-            .to_compile_error().into()
-        };
+//                 let object_ref = Self::register(object);
+                
 
-        let fields = fields.into_iter().filter_map(|field| {
-            let field_name = field.ident.expect("Invalid field!");
-            if field_name == "metadata" {
-                return None;
-            }
 
-            let attr = field.attrs.into_iter()
-                .find(|attr| {
-                    let Some(ident) = attr.meta.path().get_ident() else {
-                        return false;
-                    };
-                    ident == "component"
-                });
-            // if component attribute exists
-            if let Some(_) = attr {
-                return Some((field_name, field.ty, true))
-            }
+//                 object
+//             }
+//         } 
+//     ).into()
+// }
+
+// fn parse_object_derive(input: DeriveInput) -> TokenStream {
+//     let DeriveInput{
+//         ident: name,
+//         data: Data::Struct(DataStruct {
+//             fields, ..
+//         }), 
+//         ..} = input else {
+//             return 
+//             syn::Error::new(Span::call_site(), "Failed to parse struct!")
+//             .to_compile_error().into()
+//         };
+
+//         let fields = fields.into_iter().filter_map(|field| {
+//             let field_name = field.ident.expect("Invalid field!");
+//             if field_name == "metadata" {
+//                 return None;
+//             }
+
+//             let attr = field.attrs.into_iter()
+//                 .find(|attr| {
+//                     let Some(ident) = attr.meta.path().get_ident() else {
+//                         return false;
+//                     };
+//                     ident == "component"
+//                 });
+//             // if component attribute exists
+//             if let Some(_) = attr {
+//                 return Some((field_name, field.ty, true))
+//             }
             
-            Some((field_name,  field.ty, false))
-        }).collect::<Vec<_>>();
+//             Some((field_name,  field.ty, false))
+//         }).collect::<Vec<_>>();
 
-    generate_object_derive(name, fields)
-}
+//     generate_object_derive(name, fields)
+// }
 
-/// Derive Default but specifically for objects.
-/// This is needed since the object needs to fill in its components' component metadata,
-/// the component metadata includes the parent's type id and id.
-#[proc_macro_derive(DefaultObject, attributes(component))]
-pub fn default_object_derive(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
+// Derive Default but specifically for objects.
+// This is needed since the object needs to fill in its components' component metadata,
+// the component metadata includes the parent's type id and id.
+// #[proc_macro_derive(DefaultObject, attributes(component))]
+// pub fn default_object_derive(input: TokenStream) -> TokenStream {
+//     let input = parse_macro_input!(input as DeriveInput);
     
-   parse_object_derive(input)
-}
+//    parse_object_derive(input)
+// }

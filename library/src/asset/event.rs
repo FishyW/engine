@@ -225,6 +225,7 @@ pub trait EventPropRegister<T: Event>: Register {
 }
 
 
+// helper struct to provide the blanket implementation for Prop Addresses
 struct PropReceiverInstance<T: Component, U: Include<T>>{
     object: Rc<RefCell<U>>,
     phantom: PhantomData<T>
@@ -253,6 +254,7 @@ impl <T: Component, U: Include<T>> Register for PropAddress<T, U> {
     }
 }
 
+// blanket implementation for Object::PropAddress()
 impl <T: Event, U: Component, V: PropReceiver<T, U>> EventPropRegister<T> for
     PropAddress<U, V> {
         fn receivers(&self) -> HashMap<Id, 
